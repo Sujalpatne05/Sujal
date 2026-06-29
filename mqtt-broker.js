@@ -31,8 +31,8 @@ wss.on('connection', (ws) => {
   aedes.handle(duplex);
 });
 
-httpServer.listen(PORT, () => {
-  console.log(`MQTT WebSocket broker listening on ws://0.0.0.0:${PORT}`);
+httpServer.listen(NODE_ENV === 'production' ? PORT : 9001, () => {
+  console.log(`MQTT WebSocket broker listening on ws://0.0.0.0:${NODE_ENV === 'production' ? PORT : 9001}`);
 });
 
 // Aedes events
@@ -52,7 +52,6 @@ aedes.on('publish:start', (packet) => {
 
 process.on('SIGINT', () => {
   aedes.close(() => {
-    tcpServer.close();
     httpServer.close();
     console.log('Broker stopped');
     process.exit(0);
@@ -60,6 +59,6 @@ process.on('SIGINT', () => {
 });
 
 console.log('\n=== AERVA MQTT Broker Running ===');
-console.log(`WebSocket:      ws://0.0.0.0:${PORT}`);
+console.log(`WebSocket:      ws://localhost:${NODE_ENV === 'production' ? PORT : 9001}`);
 console.log('Default user:   aerva_zeptac');
 console.log('==================================\n');
