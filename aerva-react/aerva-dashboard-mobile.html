@@ -1,0 +1,4988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AERVA — Breathe better, at home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  /* ===== DESIGN TOKENS — LIGHT ===== */
+  :root {
+    /* Brand */
+    --aerva-blue: #0A2E50;
+    --aerva-yellow: #EFBE1D;
+    --aerva-yellow-deep: #C99707;
+
+    /* Light theme surfaces */
+    --bg: #F6F8FB;
+    --bg-tint: #EEF2F7;
+    --surface: #FFFFFF;
+    --surface-2: #FAFBFD;
+    --border: #E5EAF1;
+    --border-soft: #EEF1F6;
+    --border-strong: #D6DCE6;
+
+    /* Text */
+    --text-1: #0A1828;
+    --text-2: #4A5A72;
+    --text-3: #7B8AA0;
+    --text-mute: #A8B5C8;
+
+    /* Status — calibrated for light bg */
+    --green: #1FA063;
+    --green-soft: #E3F5EC;
+    --yellow: #C28E00;
+    --yellow-soft: #FDF5D8;
+    --red: #D63D3D;
+    --red-soft: #FBE3E3;
+
+    /* Data chart colors */
+    --chart-amber: #EFBE1D;
+    --chart-blue: #2C6FB5;
+    --chart-cyan: #1DA1B5;
+
+    /* Shadow */
+    --shadow-sm: 0 1px 2px rgba(10, 24, 40, 0.04);
+    --shadow: 0 1px 3px rgba(10, 24, 40, 0.05), 0 4px 12px rgba(10, 24, 40, 0.04);
+    --shadow-md: 0 4px 16px rgba(10, 24, 40, 0.06), 0 12px 32px rgba(10, 24, 40, 0.05);
+    --shadow-lg: 0 12px 40px rgba(10, 24, 40, 0.08), 0 24px 60px rgba(10, 24, 40, 0.06);
+    --shadow-yellow: 0 6px 20px rgba(239, 190, 29, 0.3);
+
+    /* Type */
+    --font-display: 'Fraunces', serif;
+    --font-sans: 'Geist', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Layout */
+    --sidebar-w: 240px;
+    --header-h: 64px;
+    --radius-sm: 8px;
+    --radius: 14px;
+    --radius-lg: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* Subtle atmospheric background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 90% 0%, rgba(239, 190, 29, 0.06), transparent 60%),
+      radial-gradient(ellipse 60% 60% at 0% 100%, rgba(10, 46, 80, 0.04), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; color: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ===== APP LAYOUT ===== */
+  .app { position: relative; z-index: 1; min-height: 100vh; display: flex; }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: var(--sidebar-w);
+    height: 100vh;
+    position: fixed;
+    top: 0; left: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    z-index: 50;
+  }
+
+  .sidebar-brand {
+    padding: 22px 22px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  /* ===== LOGO ===== */
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: 1.5px;
+    color: var(--aerva-blue);
+  }
+  .brand-sub {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-3);
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  /* Sidebar nav */
+  .nav-section { padding: 16px 12px; flex: 1; overflow-y: auto; }
+  .nav-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    padding: 0 12px 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--text-2);
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: all 0.18s ease;
+    margin-bottom: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .nav-item:hover {
+    background: var(--bg-tint);
+    color: var(--text-1);
+  }
+  .nav-item.active {
+    background: var(--aerva-blue);
+    color: #fff;
+  }
+  .nav-item.active svg { color: var(--aerva-yellow); }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.9; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red-soft);
+    color: var(--red);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 10px;
+  }
+  .nav-item.active .nav-badge { background: rgba(255,255,255,0.18); color: #fff; }
+
+  .sidebar-footer {
+    padding: 14px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .user-card:hover { background: var(--bg-tint); border-color: var(--border); }
+  .user-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--aerva-blue), #14416E);
+    display: grid; place-items: center;
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--aerva-yellow);
+  }
+  .user-meta { flex: 1; min-width: 0; }
+  .user-name { font-size: 12.5px; font-weight: 600; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-org { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); }
+
+  /* ===== MAIN ===== */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    height: var(--header-h);
+    border-bottom: 1px solid var(--border-soft);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+  }
+  .crumb-sep { color: var(--text-mute); }
+  .crumb-current { color: var(--text-1); }
+
+  .topbar-search {
+    margin-left: auto;
+    position: relative;
+    width: 280px;
+  }
+  .topbar-search input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 14px 9px 36px;
+    color: var(--text-1);
+    font-size: 13px;
+    outline: none;
+    transition: all 0.18s;
+  }
+  .topbar-search input:focus { border-color: var(--aerva-blue); background: #fff; }
+  .topbar-search input::placeholder { color: var(--text-3); }
+  .topbar-search svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: var(--text-3);
+  }
+
+  .topbar-actions { display: flex; align-items: center; gap: 6px; }
+  /* Mobile-only hamburger menu button (shown by @media ≤768) */
+  .topbar-menu-btn {
+    display: none;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    color: var(--text-2);
+    transition: all 0.18s;
+    position: relative;
+  }
+  .icon-btn:hover { background: var(--bg-tint); color: var(--text-1); }
+  .icon-btn svg { width: 17px; height: 17px; }
+  .icon-btn .ping {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--red);
+    border: 2px solid #fff;
+  }
+
+  .live-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--green);
+    padding: 5px 10px;
+    background: var(--green-soft);
+    border-radius: 20px;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ===== CONTENT ===== */
+  .content { padding: 28px; flex: 1; }
+  .view { display: none; animation: fadeIn 0.35s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== TYPE ===== */
+  .display-1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 32px;
+    letter-spacing: -0.5px;
+    color: var(--text-1);
+    font-variation-settings: "opsz" 144, "SOFT" 50;
+  }
+  .display-2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 24px;
+    letter-spacing: -0.3px;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    font-weight: 500;
+  }
+  .mono { font-family: var(--font-mono); }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+
+  /* ===== PAGE HEAD ===== */
+  .page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .page-head h1 { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .page-head h1 em {
+    font-style: italic;
+    color: var(--aerva-yellow-deep);
+    font-weight: 400;
+  }
+  .page-head .sub {
+    color: var(--text-3);
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
+  .head-stats {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    padding: 12px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .head-stat { display: flex; flex-direction: column; gap: 2px; }
+  .head-stat .v {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-1);
+  }
+  .head-stat .v .accent { color: var(--green); }
+  .head-stat .l {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .head-stat .div { width: 1px; height: 26px; background: var(--border); }
+
+  /* ===== DASHBOARD GRID ===== */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* ===== AQI HERO ===== */
+  .aqi-hero {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    background: linear-gradient(135deg, #FFF9E8 0%, #FFFFFF 60%);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .aqi-hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(239, 190, 29, 0.18), transparent 70%);
+    pointer-events: none;
+  }
+  .aqi-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+  }
+  .aqi-head .lbl { display: flex; flex-direction: column; gap: 4px; }
+  .aqi-head .lbl .eyebrow { color: var(--aerva-yellow-deep); }
+  .aqi-head .lbl .name {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .rename-btn {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    display: grid; place-items: center;
+    color: var(--text-3);
+    opacity: 0;
+    transition: all 0.18s;
+  }
+  .aqi-head:hover .rename-btn,
+  .reading-head:hover .rename-btn { opacity: 1; }
+  .rename-btn:hover { background: var(--bg-tint); color: var(--aerva-blue); }
+  .rename-btn svg { width: 12px; height: 12px; }
+
+  .aqi-head .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-3);
+  }
+  .meta-row .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-mute); }
+
+  .gauge-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 28px;
+    align-items: center;
+    position: relative;
+  }
+
+  .gauge-wrap {
+    position: relative;
+    width: 240px;
+    height: 240px;
+  }
+  .gauge-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .gauge-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .gauge-value {
+    font-family: var(--font-display);
+    font-size: 60px;
+    font-weight: 500;
+    color: var(--text-1);
+    line-height: 1;
+    letter-spacing: -1.5px;
+  }
+  .gauge-unit {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 6px;
+  }
+  .gauge-status {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--green);
+    padding: 4px 12px;
+    background: var(--green-soft);
+    border-radius: 12px;
+  }
+  .gauge-status.warn { color: var(--yellow); background: var(--yellow-soft); }
+  .gauge-status.bad { color: var(--red); background: var(--red-soft); }
+
+  .aqi-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .bd-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 80px;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .bd-row:last-child { border-bottom: none; }
+  .bd-row .k {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-2);
+    font-weight: 500;
+  }
+  .bd-bar {
+    height: 6px;
+    background: var(--bg-tint);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bd-bar .fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--green), var(--aerva-yellow));
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .bd-row .v {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: right;
+    color: var(--text-1);
+  }
+  .bd-row .v .u { color: var(--text-3); font-size: 10px; margin-left: 3px; font-weight: 400; }
+
+  /* ===== DEVICE PANEL ===== */
+  .device-panel {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-1);
+  }
+  .panel-link {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--aerva-blue);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .panel-link:hover { color: var(--aerva-yellow-deep); }
+
+  .add-device-btn {
+    width: 100%;
+    padding: 14px;
+    border: 1.5px dashed var(--border-strong);
+    border-radius: 12px;
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.18s;
+    margin-top: 10px;
+    background: transparent;
+  }
+  .add-device-btn:hover {
+    border-color: var(--aerva-yellow);
+    background: #FFFCEF;
+    color: var(--aerva-yellow-deep);
+    border-style: solid;
+  }
+  .add-device-btn svg { width: 16px; height: 16px; }
+
+  .device-list { display: flex; flex-direction: column; gap: 8px; }
+  .device-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    background: var(--surface-2);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .device-row:hover {
+    background: #fff;
+    border-color: var(--border);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  .device-row:hover .device-actions { opacity: 1; }
+
+  .device-status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .device-status-dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: var(--green);
+    opacity: 0.25;
+  }
+  .device-status-dot.off { background: var(--text-mute); }
+  .device-status-dot.off::after { display: none; }
+  .device-status-dot.warn { background: var(--aerva-yellow); }
+  .device-status-dot.warn::after { background: var(--aerva-yellow); }
+  .device-status-dot.bad { background: var(--red); }
+  .device-status-dot.bad::after { background: var(--red); }
+
+  .device-info { min-width: 0; }
+  .device-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .device-name .room-icon {
+    width: 14px; height: 14px;
+    color: var(--text-3);
+    flex-shrink: 0;
+  }
+  .device-loc {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-3);
+    margin-top: 2px;
+  }
+
+  .device-aqi {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-1);
+    text-align: right;
+    line-height: 1.1;
+  }
+  .device-aqi small {
+    font-size: 9px;
+    color: var(--text-3);
+    display: block;
+    letter-spacing: 1px;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+
+  .device-spark { width: 48px; height: 24px; }
+
+  .device-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.18s;
+  }
+  .device-action {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    display: grid; place-items: center;
+    color: var(--text-3);
+    transition: all 0.15s;
+  }
+  .device-action:hover { background: var(--bg-tint); color: var(--aerva-blue); }
+  .device-action.danger:hover { color: var(--red); background: var(--red-soft); }
+  .device-action svg { width: 13px; height: 13px; }
+
+  /* ===== SENSOR GRID ===== */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .sensor-card {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .sensor-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-strong);
+  }
+  .sensor-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--aerva-yellow);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .sensor-card:hover::after { opacity: 1; }
+
+  .sc-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .sc-name {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-2);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .sc-name .sub { color: var(--text-3); }
+  .sc-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    position: relative;
+  }
+  .sc-status::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    opacity: 0.25;
+  }
+  .sc-status.green { background: var(--green); }
+  .sc-status.green::after { background: var(--green); }
+  .sc-status.yellow { background: var(--aerva-yellow); }
+  .sc-status.yellow::after { background: var(--aerva-yellow); }
+  .sc-status.red { background: var(--red); }
+  .sc-status.red::after { background: var(--red); }
+
+  .sc-value {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .sc-value .n {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--text-1);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .sc-value .u {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 1px;
+  }
+
+  .sc-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .sc-trend {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .sc-trend.up { color: var(--red); }
+  .sc-trend.down { color: var(--green); }
+  .sc-trend.flat { color: var(--text-3); }
+
+  .sc-spark { width: 64px; height: 22px; }
+
+  /* ===== ANALYTICS ===== */
+  .analytics-row {
+    display: grid;
+    grid-template-columns: 2.1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .chart-card {
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .chart-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .chart-title-block { display: flex; flex-direction: column; gap: 2px; }
+  .chart-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-1);
+  }
+  .chart-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-3);
+  }
+
+  .timeframe {
+    display: flex;
+    gap: 2px;
+    background: var(--surface-2);
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .tf-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text-3);
+    transition: all 0.18s;
+  }
+  .tf-btn:hover { color: var(--text-1); }
+  .tf-btn.active {
+    background: var(--aerva-blue);
+    color: #fff;
+  }
+
+  .chart-canvas-wrap { position: relative; height: 240px; }
+
+  /* AI Insights */
+  .ai-card {
+    padding: 22px 22px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .ai-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ai-icon {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #FFF4D0, #FFFCEF);
+    border: 1px solid var(--aerva-yellow);
+    display: grid; place-items: center;
+    color: var(--aerva-yellow-deep);
+  }
+  .ai-icon svg { width: 16px; height: 16px; }
+  .ai-card .chart-title { font-size: 16px; }
+
+  .ai-insight {
+    padding: 14px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--aerva-yellow);
+  }
+  .ai-insight.green { border-left-color: var(--green); background: var(--green-soft); }
+  .ai-insight.red { border-left-color: var(--red); background: var(--red-soft); }
+
+  .ai-insight .title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 4px;
+  }
+  .ai-insight .body {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.55;
+  }
+  .ai-insight .action {
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--aerva-yellow-deep);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .ai-insight.green .action { color: var(--green); }
+  .ai-insight.red .action { color: var(--red); }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.18s;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--aerva-blue);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #14416E; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(10,46,80,0.2); }
+  .btn-accent {
+    background: var(--aerva-yellow);
+    color: var(--aerva-blue);
+    font-weight: 700;
+  }
+  .btn-accent:hover { box-shadow: var(--shadow-yellow); transform: translateY(-1px); }
+  .btn-ghost {
+    background: var(--surface);
+    color: var(--text-1);
+    border-color: var(--border);
+  }
+  .btn-ghost:hover { background: var(--bg-tint); border-color: var(--border-strong); }
+  .btn-danger {
+    background: var(--surface);
+    color: var(--red);
+    border-color: var(--red-soft);
+  }
+  .btn-danger:hover { background: var(--red-soft); }
+  .btn svg { width: 15px; height: 15px; }
+
+  /* ===== DEVICE DETAIL ===== */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .reading-hero {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .reading-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .reading-head .who {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .reading-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #FFF4D0, #FFFCEF);
+    border: 1px solid var(--aerva-yellow);
+    display: grid; place-items: center;
+    color: var(--aerva-yellow-deep);
+  }
+  .reading-icon svg { width: 22px; height: 22px; }
+  .reading-name .t { font-size: 12px; color: var(--text-3); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1px; }
+  .reading-name .b {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .reading-big {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .reading-big .n {
+    font-family: var(--font-display);
+    font-size: 88px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -2.5px;
+    color: var(--text-1);
+  }
+  .reading-big .u {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-3);
+    letter-spacing: 1px;
+  }
+
+  .threshold-bar-wrap { padding: 4px 0; }
+  .threshold-bar {
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #1FA063 0%, #1FA063 35%, #EFBE1D 50%, #EFBE1D 70%, #D63D3D 100%);
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .threshold-marker {
+    position: absolute;
+    top: -5px;
+    width: 4px;
+    height: 20px;
+    background: var(--text-1);
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .threshold-marker::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid var(--text-1);
+  }
+  .threshold-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--text-3);
+    letter-spacing: 0.5px;
+  }
+  .threshold-labels span:first-child { color: var(--green); }
+  .threshold-labels span:nth-child(2) { color: var(--yellow); }
+  .threshold-labels span:last-child { color: var(--red); }
+
+  .reading-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .reading-stat .l {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 1.2px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .reading-stat .v {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-1);
+  }
+
+  .readings-list-card {
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .readings-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 20px;
+  }
+  .reading-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .reading-item:last-child,
+  .reading-item:nth-last-child(2) { border-bottom: none; }
+  .reading-item .t { color: var(--text-3); }
+  .reading-item .v { color: var(--text-1); display: flex; align-items: center; gap: 6px; font-weight: 600; }
+  .reading-item .v .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* ===== ALERTS ===== */
+  .alerts-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    width: fit-content;
+  }
+  .alert-tab {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .alert-tab:hover { color: var(--text-1); }
+  .alert-tab.active { background: var(--aerva-blue); color: #fff; }
+  .alert-tab .count {
+    background: var(--bg-tint);
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    color: var(--text-2);
+  }
+  .alert-tab.active .count { background: rgba(255,255,255,0.18); color: #fff; }
+
+  .alerts-list { display: flex; flex-direction: column; gap: 10px; }
+  .alert-item {
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    border-left: 3px solid var(--text-mute);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 18px;
+    align-items: center;
+    transition: all 0.18s;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+  }
+  .alert-item:hover { transform: translateX(2px); box-shadow: var(--shadow); }
+  .alert-item.critical { border-left-color: var(--red); }
+  .alert-item.warning { border-left-color: var(--aerva-yellow); }
+  .alert-item.cleared { border-left-color: var(--green); opacity: 0.85; }
+
+  .alert-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    background: var(--bg-tint);
+    color: var(--text-2);
+  }
+  .alert-item.critical .alert-icon { background: var(--red-soft); color: var(--red); }
+  .alert-item.warning .alert-icon { background: var(--yellow-soft); color: var(--yellow); }
+  .alert-item.cleared .alert-icon { background: var(--green-soft); color: var(--green); }
+  .alert-icon svg { width: 18px; height: 18px; }
+
+  .alert-body { min-width: 0; }
+  .alert-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 3px;
+  }
+  .alert-desc {
+    font-size: 12px;
+    color: var(--text-2);
+    margin-bottom: 4px;
+  }
+  .alert-meta {
+    display: flex;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-3);
+  }
+
+  .alert-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .alert-value {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .alert-item.critical .alert-value { color: var(--red); }
+  .alert-item.warning .alert-value { color: var(--yellow); }
+  .alert-item.cleared .alert-value { color: var(--green); }
+
+  /* ===== ONBOARDING ===== */
+  .onboard-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .stepper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .stepper::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    height: 1px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+  }
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: grid; place-items: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    transition: all 0.3s;
+  }
+  .step.done .step-dot {
+    background: var(--aerva-blue);
+    border-color: var(--aerva-blue);
+    color: #fff;
+  }
+  .step.active .step-dot {
+    background: var(--aerva-yellow);
+    border-color: var(--aerva-yellow);
+    color: var(--aerva-blue);
+    box-shadow: 0 0 0 4px rgba(239, 190, 29, 0.18);
+  }
+  .step-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-align: center;
+  }
+  .step.active .step-label, .step.done .step-label { color: var(--text-1); }
+
+  .qr-card {
+    padding: 36px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+  .qr-scanner {
+    width: 240px; height: 240px;
+    border-radius: 18px;
+    background: var(--bg-tint);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+  .qr-corner {
+    position: absolute;
+    width: 30px; height: 30px;
+    border: 2.5px solid var(--aerva-yellow);
+  }
+  .qr-corner.tl { top: 14px; left: 14px; border-right: none; border-bottom: none; border-radius: 4px 0 0 0; }
+  .qr-corner.tr { top: 14px; right: 14px; border-left: none; border-bottom: none; border-radius: 0 4px 0 0; }
+  .qr-corner.bl { bottom: 14px; left: 14px; border-right: none; border-top: none; border-radius: 0 0 0 4px; }
+  .qr-corner.br { bottom: 14px; right: 14px; border-left: none; border-top: none; border-radius: 0 0 4px 0; }
+  .qr-scan-line {
+    position: absolute;
+    left: 20px; right: 20px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--aerva-yellow), transparent);
+    box-shadow: 0 0 12px var(--aerva-yellow);
+    animation: scanline 2.4s linear infinite;
+  }
+  @keyframes scanline {
+    0% { top: 20px; }
+    50% { top: calc(100% - 22px); }
+    100% { top: 20px; }
+  }
+  .qr-graphic {
+    width: 120px; height: 120px;
+    background:
+      radial-gradient(circle at 25% 25%, var(--aerva-blue) 8%, transparent 9%),
+      radial-gradient(circle at 75% 25%, var(--aerva-blue) 8%, transparent 9%),
+      radial-gradient(circle at 25% 75%, var(--aerva-blue) 8%, transparent 9%),
+      conic-gradient(from 0deg, var(--aerva-blue) 0deg 4deg, transparent 4deg 8deg);
+    opacity: 0.2;
+    border-radius: 8px;
+  }
+
+  /* ===== REPORTS ===== */
+  .reports-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 20px;
+  }
+  .report-config {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .field input, .field select, .field textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text-1);
+    font-size: 13px;
+    font-family: var(--font-mono);
+    outline: none;
+    transition: border-color 0.18s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--aerva-blue); }
+
+  .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .format-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .format-opt {
+    padding: 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .format-opt:hover { background: var(--surface-2); border-color: var(--border-strong); }
+  .format-opt.active { border-color: var(--aerva-yellow); background: #FFFCEF; }
+  .format-opt svg { width: 28px; height: 28px; color: var(--text-2); }
+  .format-opt.active svg { color: var(--aerva-yellow-deep); }
+  .format-opt .ft {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--text-2);
+  }
+  .format-opt.active .ft { color: var(--aerva-yellow-deep); }
+
+  .report-preview {
+    padding: 24px;
+  }
+  .preview-doc {
+    background: var(--surface);
+    color: var(--text-1);
+    border-radius: 10px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    font-family: var(--font-sans);
+    min-height: 360px;
+  }
+  .pdoc-head { display: flex; justify-content: space-between; padding-bottom: 14px; border-bottom: 2px solid var(--aerva-blue); margin-bottom: 14px; }
+  .pdoc-brand { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--aerva-blue); letter-spacing: 1px; }
+  .pdoc-brand .sub { font-family: var(--font-mono); font-size: 9px; color: var(--text-3); letter-spacing: 1.5px; font-weight: 400; }
+  .pdoc-meta { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); text-align: right; }
+  .pdoc-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--aerva-blue); margin-bottom: 10px; }
+  .pdoc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5px;
+  }
+  .pdoc-table th {
+    text-align: left;
+    background: var(--aerva-blue);
+    color: #fff;
+    padding: 6px 8px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.5px;
+  }
+  .pdoc-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: var(--font-mono);
+    color: var(--text-1);
+  }
+
+  /* ===== SETTINGS ===== */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+  }
+  .settings-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .snav-item {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.18s;
+  }
+  .snav-item:hover { background: var(--bg-tint); color: var(--text-1); }
+  .snav-item.active { background: var(--aerva-blue); color: #fff; }
+  .snav-item.active svg { color: var(--aerva-yellow); }
+  .snav-item svg { width: 16px; height: 16px; }
+
+  .settings-content { padding: 28px; }
+  .settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .ss-head { margin-bottom: 8px; }
+  .ss-head h3 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 4px;
+  }
+  .ss-head p { font-size: 13px; color: var(--text-3); }
+
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-soft);
+    gap: 20px;
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .sr-info { flex: 1; }
+  .sr-title { font-size: 13.5px; font-weight: 600; color: var(--text-1); margin-bottom: 2px; }
+  .sr-desc { font-size: 12px; color: var(--text-3); }
+
+  .segmented {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .seg-btn {
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    transition: all 0.18s;
+  }
+  .seg-btn:hover { color: var(--text-1); }
+  .seg-btn.active { background: var(--aerva-blue); color: #fff; }
+
+  .toggle {
+    position: relative;
+    width: 40px; height: 22px;
+    background: var(--border-strong);
+    border-radius: 11px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .toggle.on { background: var(--aerva-blue); }
+  .toggle.on::after { transform: translateX(18px); }
+
+  /* ===== SETTINGS SWITCHABLE PANELS ===== */
+  .settings-content-wrap { min-width: 0; }
+  .settings-panel { display: none; }
+  .settings-panel.active { display: block; animation: fadeIn 0.25s ease; }
+
+  /* Tinted bg panel (for alerts) */
+  .settings-panel-tinted {
+    background: linear-gradient(180deg, rgba(231, 238, 248, 0.5), rgba(244, 247, 251, 0.7));
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+  }
+
+  /* Alerts sub-nav badge */
+  .snav-item .nav-badge {
+    margin-left: auto;
+    background: var(--red-soft);
+    color: var(--red);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 10px;
+  }
+  .snav-item.active .nav-badge {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+  }
+
+  /* Device list inside Devices panel */
+  .device-mgmt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .device-mgmt-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: all 0.18s;
+  }
+  .device-mgmt-row:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ===== HOME EYEBROW (per UX request — explicit Home tab marker) ===== */
+  .eyebrow-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--aerva-blue);
+    color: #fff;
+    padding: 4px 11px 4px 8px;
+    border-radius: 100px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(10, 46, 80, 0.15);
+  }
+  .home-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--aerva-yellow);
+    box-shadow: 0 0 0 3px rgba(239, 190, 29, 0.25);
+  }
+  .greeting {
+    font-size: 12.5px;
+    color: var(--text-3);
+    letter-spacing: 0.3px;
+    margin-bottom: 4px;
+  }
+
+  /* Stronger active state on main sidebar nav so the Home tab is unmistakable */
+  .nav-item { position: relative; }
+  .nav-item.active {
+    background: linear-gradient(90deg, rgba(239, 190, 29, 0.14), rgba(239, 190, 29, 0));
+    color: var(--aerva-blue);
+    font-weight: 600;
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    background: var(--aerva-yellow);
+    border-radius: 0 3px 3px 0;
+  }
+
+  /* ===== INLINE SENSOR DETAIL PANEL (home page) ===== */
+  .sensor-card { position: relative; transition: all 0.2s; }
+  .sensor-card.active {
+    border-color: var(--aerva-blue);
+    box-shadow: 0 6px 18px rgba(10, 46, 80, 0.18), 0 0 0 2px var(--aerva-blue) inset;
+    transform: translateY(-2px);
+  }
+  .sensor-card.active::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: 16px; right: 16px;
+    height: 3px;
+    background: var(--aerva-yellow);
+    border-radius: 0 0 3px 3px;
+  }
+
+  .home-sensor-detail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+    animation: hsdFadeIn 0.25s ease;
+  }
+  @keyframes hsdFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hsd-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid var(--border-soft);
+    background: linear-gradient(180deg, #FCFDFF 0%, #FFFFFF 100%);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .hsd-head-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hsd-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text-1);
+    line-height: 1;
+    letter-spacing: -0.5px;
+    margin: 6px 0 4px;
+  }
+  .hsd-fullname {
+    font-size: 12px;
+    color: var(--text-3);
+    letter-spacing: 0.3px;
+  }
+
+  .hsd-body {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 32px;
+    padding: 24px;
+    align-items: start;
+  }
+  .hsd-reading { min-width: 0; }
+  .hsd-value {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .hsd-value .n {
+    font-family: var(--font-display);
+    font-size: 78px;
+    font-weight: 500;
+    color: var(--text-1);
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+  .hsd-value .u {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--text-3);
+    margin-left: 4px;
+  }
+  .hsd-status {
+    margin-left: 10px;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    align-self: center;
+  }
+  .hsd-status.good     { background: var(--green-soft); color: var(--green); }
+  .hsd-status.moderate { background: rgba(239, 190, 29, 0.18); color: #C57A2B; }
+  .hsd-status.poor     { background: rgba(214, 100, 29, 0.16); color: #C57A2B; }
+  .hsd-status.bad      { background: var(--red-soft); color: var(--red); }
+  .hsd-status.hazardous{ background: rgba(139, 31, 139, 0.12); color: #8B1F8B; }
+
+  .hsd-edu {
+    background: linear-gradient(135deg, #FFFCEF 0%, #FFF7DA 100%);
+    border-radius: 14px;
+    padding: 22px 24px;
+    border: 1px solid rgba(239, 190, 29, 0.3);
+  }
+  .hsd-edu .edu-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--aerva-yellow-deep);
+    margin-bottom: 10px;
+  }
+  .hsd-edu .edu-desc {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text-2);
+    margin-bottom: 14px;
+  }
+  .hsd-edu .edu-bullets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .hsd-edu .edu-bullet {
+    background: #fff;
+    border: 1px solid rgba(239, 190, 29, 0.35);
+    padding: 5px 11px;
+    border-radius: 14px;
+    font-size: 11.5px;
+    color: var(--text-2);
+    font-weight: 500;
+    font-family: var(--font-mono);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hsd-edu .edu-bullet .icon {
+    width: 12px;
+    height: 12px;
+    color: var(--green);
+  }
+
+  .hsd-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    border-top: 1px solid var(--border-soft);
+    background: var(--surface-2);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  @media (max-width: 900px) {
+    .hsd-body { grid-template-columns: 1fr; gap: 20px; }
+    .hsd-value .n { font-size: 64px; }
+    .hsd-title { font-size: 26px; }
+  }
+  @media (max-width: 480px) {
+    .hsd-head { padding: 18px; }
+    .hsd-body { padding: 18px; }
+    .hsd-foot { padding: 12px 18px; }
+    .hsd-value .n { font-size: 52px; }
+  }
+
+  /* ===== SECTION HEADER (used between dash-grid and sensor-grid) ===== */
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin: 6px 0 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-1);
+    letter-spacing: -0.3px;
+  }
+  .section-sub {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ===== MOBILE BOTTOM NAV ===== */
+  .mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  }
+  .mobile-nav-inner { display: flex; height: 100%; }
+  .mnav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: color 0.18s;
+    position: relative;
+  }
+  .mnav-item.active { color: var(--aerva-blue); }
+  .mnav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 3px;
+    background: var(--aerva-yellow);
+    border-radius: 0 0 3px 3px;
+  }
+  .mnav-item svg { width: 20px; height: 20px; }
+  .mnav-item span {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 24, 40, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    animation: modalIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal-head {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-head h3 {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+  }
+  .modal-head .x {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    color: var(--text-3);
+    transition: all 0.15s;
+  }
+  .modal-head .x:hover { background: var(--bg-tint); color: var(--text-1); }
+  .modal-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .modal-foot { padding: 16px 24px; border-top: 1px solid var(--border-soft); display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* Room icon picker */
+  .room-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .room-opt {
+    padding: 12px 8px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-2);
+  }
+  .room-opt:hover { border-color: var(--border-strong); }
+  .room-opt.active { border-color: var(--aerva-yellow); background: #FFFCEF; color: var(--aerva-yellow-deep); }
+  .room-opt svg { width: 20px; height: 20px; }
+  .room-opt .lab {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--aerva-blue);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast svg { width: 16px; height: 16px; color: var(--aerva-yellow); }
+
+  /* ===== SENSOR TABS (Device Detail) ===== */
+  .sensor-tabs-wrap {
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .sensor-tabs {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+  }
+  .stab {
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  .stab:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+    border-color: var(--border-strong);
+  }
+  .stab.active {
+    background: var(--aerva-blue);
+    border-color: var(--aerva-blue);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(10, 46, 80, 0.25);
+  }
+  .stab.active::after {
+    content: '';
+    position: absolute;
+    left: 16px; right: 16px;
+    bottom: 8px;
+    height: 2px;
+    background: var(--aerva-yellow);
+    border-radius: 2px;
+  }
+  .stab .st-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .stab .st-name {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-1);
+  }
+  .stab.active .st-name { color: #fff; }
+  .stab .st-name .sub { font-weight: 400; opacity: 0.6; }
+  .stab .st-val {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .stab .st-val .v {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-1);
+    letter-spacing: -0.3px;
+    line-height: 1;
+  }
+  .stab.active .st-val .v { color: #fff; }
+  .stab .st-val .u {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-3);
+  }
+  .stab.active .st-val .u { color: rgba(255,255,255,0.6); }
+  .stab .st-status {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .stab .st-status.good { color: var(--green); }
+  .stab .st-status.moderate { color: var(--yellow); }
+  .stab .st-status.poor { color: #C57A2B; }
+  .stab .st-status.bad { color: var(--red); }
+  .stab .st-status.hazardous { color: #8B1F8B; }
+  .stab.active .st-status { color: var(--aerva-yellow); }
+  .stab .st-meter {
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .stab:not(.active) .st-meter { background: var(--bg-tint); }
+  .stab .st-meter .fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s;
+  }
+  .stab .st-meter .fill.good { background: var(--green); }
+  .stab .st-meter .fill.moderate { background: var(--aerva-yellow); }
+  .stab .st-meter .fill.poor { background: #C57A2B; }
+  .stab .st-meter .fill.bad { background: var(--red); }
+  .stab .st-meter .fill.hazardous { background: #8B1F8B; }
+  .stab .st-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    margin-top: 5px;
+  }
+  .stab .st-dot.good { background: var(--green); }
+  .stab .st-dot.moderate { background: var(--aerva-yellow); }
+  .stab .st-dot.poor { background: #C57A2B; }
+  .stab .st-dot.bad { background: var(--red); }
+  .stab .st-dot.hazardous { background: #8B1F8B; }
+
+  /* ===== EDUCATIONAL CARD ===== */
+  .edu-card {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+    background: linear-gradient(135deg, #FFFCEF 0%, #FFFFFF 60%);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .edu-card::before {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(239, 190, 29, 0.12), transparent 70%);
+    pointer-events: none;
+  }
+  .edu-body { position: relative; z-index: 1; }
+  .edu-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--aerva-yellow-deep);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .edu-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+  .edu-desc {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text-2);
+    max-width: 540px;
+    margin-bottom: 14px;
+  }
+  .edu-bullets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .edu-bullet {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 11.5px;
+    color: var(--text-2);
+    font-weight: 500;
+  }
+  .edu-bullet .icon {
+    width: 12px; height: 12px;
+    color: var(--aerva-yellow-deep);
+  }
+  .edu-illust {
+    width: 200px;
+    height: 160px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .edu-illust svg { width: 100%; height: 100%; }
+
+  /* Reading details row */
+  .detail-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* ===== ALERTS — MANAGEMENT ===== */
+  .alert-tabs-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .alert-tabs-left {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+  }
+  .alert-tabs-right { display: flex; gap: 10px; align-items: center; }
+  .alert-search {
+    position: relative;
+    width: 240px;
+  }
+  .alert-search input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 14px 9px 36px;
+    color: var(--text-1);
+    font-size: 13px;
+    outline: none;
+    font-family: var(--font-sans);
+  }
+  .alert-search input:focus { border-color: var(--aerva-blue); }
+  .alert-search svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: var(--text-3);
+  }
+
+  .alert-rule {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.18s;
+  }
+  .alert-rule.disabled { opacity: 0.55; }
+  .alert-rule-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .alert-rule-summary {
+    font-size: 14.5px;
+    color: var(--text-1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .alert-rule-summary .lbl { color: var(--text-3); font-weight: 400; }
+  .alert-rule-summary b {
+    font-weight: 700;
+    color: var(--aerva-blue);
+  }
+  .alert-rule-summary .cond {
+    background: var(--bg-tint);
+    color: var(--text-1);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .alert-rule-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .alert-trash {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    color: var(--red);
+    display: grid;
+    place-items: center;
+    transition: all 0.15s;
+  }
+  .alert-trash:hover { background: var(--red-soft); }
+  .alert-trash svg { width: 15px; height: 15px; }
+
+  .alert-rule-body {
+    display: grid;
+    grid-template-columns: 1.3fr auto 1fr 1.3fr;
+    gap: 10px;
+    align-items: end;
+  }
+  .ar-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .ar-field label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .ar-field select, .ar-field input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--text-1);
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .ar-field select:focus, .ar-field input:focus { border-color: var(--aerva-blue); }
+  .ar-is {
+    align-self: center;
+    padding-bottom: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-3);
+    text-align: center;
+  }
+
+  .alert-rule-extra {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .alert-rule-email {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ar-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-2);
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .ar-check input { accent-color: var(--aerva-blue); width: 15px; height: 15px; }
+
+  .alert-rule-foot {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .add-alert-card {
+    background: var(--surface);
+    border: 1.5px dashed var(--border-strong);
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.18s;
+    color: var(--text-2);
+  }
+  .add-alert-card:hover {
+    border-color: var(--aerva-yellow);
+    background: #FFFCEF;
+    color: var(--aerva-yellow-deep);
+    border-style: solid;
+  }
+  .add-alert-card svg { width: 24px; height: 24px; margin-bottom: 6px; }
+  .add-alert-card .t { font-weight: 600; font-size: 14px; margin-bottom: 2px; color: var(--text-1); }
+  .add-alert-card:hover .t { color: var(--aerva-yellow-deep); }
+  .add-alert-card .d { font-size: 12px; color: var(--text-3); }
+
+  /* Alert feed */
+  .feed-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .feed-filter {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--text-1);
+    cursor: pointer;
+  }
+  .feed-empty {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 60px 20px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .feed-empty .bell {
+    width: 64px; height: 64px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: var(--bg-tint);
+    display: grid; place-items: center;
+    color: var(--text-3);
+  }
+  .feed-empty .bell svg { width: 28px; height: 28px; }
+  .feed-empty .t {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 4px;
+  }
+  .feed-empty .d {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  .feed-note {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: var(--red-soft);
+    border-radius: 10px;
+    font-size: 12.5px;
+    color: var(--red);
+    font-weight: 500;
+  }
+  .feed-note b { font-weight: 700; }
+
+  /* ===============================================================
+     MOBILE-FIRST RESPONSIVE SYSTEM
+     Breakpoints:
+       ≤ 1280  — tablet landscape: tighten grids
+       ≤ 1024  — tablet portrait: many side-by-side layouts stack
+       ≤ 768   — phone landscape / small tablet: full mobile mode
+                 (sidebar hidden, bottom nav appears, modals become sheets)
+       ≤ 480   — phone portrait: tightened typography + spacing
+     =============================================================== */
+
+  /* ===== ≤ 1280 px (tablet landscape) ===== */
+  @media (max-width: 1280px) {
+    .sensor-tabs { grid-template-columns: repeat(4, 1fr); }
+    .alert-rule-body { grid-template-columns: 1fr 1fr; }
+    .ar-is { grid-column: span 2; padding-bottom: 0; }
+    .sensor-grid { grid-template-columns: repeat(3, 1fr); }
+    .analytics-row { grid-template-columns: 1fr; }
+    .dash-grid { grid-template-columns: 1fr; }
+    :root { --sidebar-w: 220px; }
+    .content { padding: 24px; }
+  }
+
+  /* ===== ≤ 1024 px (tablet portrait) ===== */
+  @media (max-width: 1024px) {
+    .reports-grid { grid-template-columns: 1fr; }
+    .settings-grid { grid-template-columns: 1fr; }
+    .settings-nav { flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 6px; }
+    .settings-nav::-webkit-scrollbar { display: none; }
+    .settings-nav { scrollbar-width: none; }
+    .snav-item { white-space: nowrap; flex-shrink: 0; padding: 10px 16px; }
+    .page-head { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .head-stats { width: 100%; justify-content: flex-start; }
+    .gauge-row { grid-template-columns: 1fr; gap: 24px; justify-items: center; }
+    .gauge-wrap { width: 220px; height: 220px; }
+    .hsd-body { grid-template-columns: 1fr; gap: 20px; }
+  }
+
+  /* ===== ≤ 768 px (PHONE — full mobile mode) ===== */
+  @media (max-width: 768px) {
+    :root {
+      --sidebar-w: 0px;
+      --radius-lg: 14px;
+      --radius: 12px;
+    }
+
+    /* Sidebar is fully hidden on phones — bottom nav is the only navigation */
+    .sidebar { display: none; }
+    .sidebar-overlay { display: none !important; }
+
+    /* Main fills the whole width; account for bottom nav */
+    .main { margin-left: 0; padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+
+    /* Show hamburger toggle, hide desktop-only search */
+    .topbar { padding: 0 14px; height: 56px; gap: 8px; }
+    .topbar-menu-btn { display: none; }
+    .topbar-search { display: none; }
+    .topbar-actions .live-pill { display: none; }
+    .breadcrumb { font-size: 10.5px; flex: 1; min-width: 0; }
+    .breadcrumb .crumb-current { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Mobile bottom-nav appears */
+    .mobile-nav { display: block; }
+    .mnav-item { min-height: 44px; }
+
+    /* Content area gets phone-sized padding */
+    .content { padding: 14px; }
+
+    /* Typography — scale display sizes down */
+    .display-1 { font-size: 30px; line-height: 1.1; }
+    .display-2 { font-size: 24px; }
+    .eyebrow { font-size: 10px; }
+    .page-head h1 { word-wrap: break-word; }
+
+    /* Page head */
+    .page-head { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+    .head-stats {
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+    .head-stat { flex: 1; padding: 0; }
+    .head-stat .v { font-size: 22px; }
+    .head-stat .l { font-size: 9.5px; }
+    .head-stats .div { display: none; }
+
+    /* Dash-grid stacks; cards tighten padding */
+    .dash-grid { grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
+    .aqi-hero { padding: 20px; }
+    .gauge-row { grid-template-columns: 1fr; gap: 18px; justify-items: center; text-align: center; }
+    .gauge-wrap { width: 200px; height: 200px; }
+    .gauge-value { font-size: 50px; }
+    .aqi-breakdown { width: 100%; }
+    .bd-row { grid-template-columns: 70px 1fr 90px; gap: 10px; }
+
+    /* Device panel: tighter rows */
+    .device-panel { padding: 18px; }
+    .panel-head { gap: 10px; }
+    .device-list { gap: 8px; }
+
+    /* Sensor grid: 2-up on phone */
+    .sensor-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+    .sensor-card { padding: 14px; min-height: 110px; }
+    .sensor-card .sc-value .n { font-size: 26px; }
+    .sensor-card .sc-spark { width: 60px; height: 22px; }
+
+    /* Inline home-sensor-detail panel — stacks */
+    .hsd-head { padding: 18px 18px 14px; }
+    .hsd-title { font-size: 26px; }
+    .hsd-body { grid-template-columns: 1fr; padding: 18px; gap: 18px; }
+    .hsd-value .n { font-size: 60px; letter-spacing: -1.5px; }
+    .hsd-foot { padding: 12px 18px; flex-direction: column; align-items: stretch; gap: 8px; }
+    .hsd-foot .btn-sm { width: 100%; justify-content: center; }
+    .reading-stats { grid-template-columns: repeat(3, 1fr); }
+
+    /* Section header */
+    .section-head { flex-direction: column; align-items: flex-start; margin: 4px 0 12px; }
+    .section-title { font-size: 18px; }
+
+    /* Device-detail page sensor tabs — horizontal scroll instead of grid */
+    .sensor-tabs-wrap {
+      margin: 0 -14px 16px;
+      padding: 0 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    }
+    .sensor-tabs-wrap::-webkit-scrollbar { display: none; }
+    .sensor-tabs-wrap { scrollbar-width: none; }
+    .sensor-tabs {
+      display: flex;
+      gap: 8px;
+      width: max-content;
+      grid-template-columns: none !important;
+    }
+    .stab {
+      min-width: 130px;
+      scroll-snap-align: start;
+    }
+
+    /* Edu card on device detail stacks */
+    .edu-card { grid-template-columns: 1fr; padding: 18px; }
+    .edu-illust { width: 140px; height: 110px; margin: 12px auto 0; }
+
+    /* Detail grid (reading hero + chart) — stack on phone */
+    .detail-grid-3 { grid-template-columns: 1fr; gap: 14px; }
+    .reading-hero { padding: 20px; }
+    .reading-big .n { font-size: 60px; }
+    .readings-list { grid-template-columns: 1fr; }
+
+    /* Analytics row already stacks at 1280; tighten padding here */
+    .chart-card, .insights-card { padding: 18px; }
+    .chart-canvas-wrap { height: 240px !important; }
+
+    /* Alerts — rule cards stack fields */
+    .alert-rule-body { grid-template-columns: 1fr; gap: 12px; }
+    .ar-is { grid-column: span 1; padding-bottom: 0; }
+    .alert-rule-extra { grid-template-columns: 1fr; }
+    .alert-tabs-bar { flex-direction: column; align-items: stretch; gap: 12px; }
+    .alert-tabs-right { flex-direction: column; gap: 10px; }
+    .alert-search { width: 100%; }
+    .alert-search input { width: 100%; }
+    .alert-item { padding: 14px; gap: 10px; }
+    .alert-actions { flex-shrink: 0; }
+
+    /* Settings panels */
+    .settings-panel-tinted { padding: 14px; }
+    .device-mgmt-row { padding: 12px; }
+    .account-row { gap: 12px; }
+
+    /* Reports — config + preview stack */
+    .pdoc-head { flex-direction: column; align-items: flex-start; }
+    .pdoc-meta { text-align: left; }
+    .format-row { grid-template-columns: 1fr 1fr; }
+
+    /* Modals become bottom sheets */
+    .modal-backdrop {
+      align-items: flex-end;
+      padding: 0;
+    }
+    .modal {
+      width: 100%;
+      max-width: 100%;
+      max-height: 92vh;
+      border-radius: 18px 18px 0 0;
+      animation: sheetUp 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+    .modal-head { padding: 16px 20px 12px; }
+    .modal-body { padding: 16px 20px 20px; }
+    .modal-foot { padding: 12px 20px 16px; }
+    @keyframes sheetUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    /* Visual handle on top of the sheet for affordance */
+    .modal::before {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 4px;
+      background: var(--border-strong);
+      border-radius: 2px;
+      margin: 8px auto 0;
+      opacity: 0.6;
+    }
+
+    /* Onboarding gets phone padding too */
+    .onboard-content { padding: 14px; }
+    .qr-card { padding: 24px 18px; }
+    .room-picker { grid-template-columns: repeat(3, 1fr); }
+    .room-opt { padding: 12px 6px; }
+
+    /* All interactive elements meet touch target */
+    .btn, .icon-btn, .rule-update-btn, .seg-btn { min-height: 40px; }
+    .icon-btn { width: 40px; height: 40px; }
+    button { touch-action: manipulation; }
+
+    /* Hide the desktop rename-pencil hover quirks — show always on touch */
+    .rename-btn { opacity: 1; }
+  }
+
+  /* ===== ≤ 480 px (phone portrait — tighter still) ===== */
+  @media (max-width: 480px) {
+    .content { padding: 12px; }
+    .display-1 { font-size: 26px; }
+    .eyebrow-home { font-size: 9.5px; padding: 3px 9px 3px 7px; }
+
+    /* Sensor cards — 2-up but smaller */
+    .sensor-grid { gap: 8px; }
+    .sensor-card { padding: 12px; min-height: 96px; }
+    .sensor-card .sc-name { font-size: 11px; }
+    .sensor-card .sc-value .n { font-size: 22px; }
+    .sensor-card .sc-spark { width: 50px; height: 18px; }
+
+    /* AQI hero gauge fits smaller phones */
+    .gauge-wrap { width: 180px; height: 180px; }
+    .gauge-value { font-size: 42px; }
+    .bd-row { grid-template-columns: 60px 1fr 80px; gap: 8px; }
+
+    /* Home detail panel reading value */
+    .hsd-value .n { font-size: 50px; }
+    .hsd-title { font-size: 22px; }
+    .hsd-edu { padding: 16px; }
+    .reading-stats { gap: 8px; }
+    .reading-stat .v { font-size: 16px; }
+    .reading-stat .l { font-size: 9.5px; }
+
+    /* Onboarding room picker — wraps more naturally */
+    .room-picker { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== ADD DEVICE MODAL ===== -->
+<div class="modal-backdrop" id="addDeviceModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Add a new device</h3>
+      <button class="x" onclick="closeModal('addDeviceModal')">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Device name</label>
+        <input id="newDeviceName" type="text" placeholder="e.g. Living Room, Bedroom, Office" />
+      </div>
+      <div class="field">
+        <label>Room type</label>
+        <div class="room-picker" id="roomPicker">
+          <div class="room-opt active" data-room="living">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 11v8a1 1 0 0 0 1 1h2v-5h14v5h2a1 1 0 0 0 1-1v-8"/><path d="M4 11V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v4"/><path d="M5 11h14"/></svg>
+            <span class="lab">Living</span>
+          </div>
+          <div class="room-opt" data-room="bedroom">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12v8h20v-8"/><path d="M2 12V7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5"/><path d="M6 12V9a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3M13 12V9a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3"/></svg>
+            <span class="lab">Bedroom</span>
+          </div>
+          <div class="room-opt" data-room="kitchen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><circle cx="8" cy="6" r="0.5" fill="currentColor"/><circle cx="8" cy="12" r="0.5" fill="currentColor"/></svg>
+            <span class="lab">Kitchen</span>
+          </div>
+          <div class="room-opt" data-room="office">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="2" y1="13" x2="22" y2="13"/></svg>
+            <span class="lab">Office</span>
+          </div>
+          <div class="room-opt" data-room="kids">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><path d="M9 5l-1-2M15 5l1-2"/></svg>
+            <span class="lab">Kids</span>
+          </div>
+          <div class="room-opt" data-room="bathroom">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h18M5 12V7a3 3 0 0 1 6 0M5 12v6a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-6"/></svg>
+            <span class="lab">Bathroom</span>
+          </div>
+          <div class="room-opt" data-room="balcony">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21V8a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v13"/><line x1="3" y1="21" x2="21" y2="21"/><line x1="9" y1="11" x2="9" y2="21"/><line x1="15" y1="11" x2="15" y2="21"/></svg>
+            <span class="lab">Balcony</span>
+          </div>
+          <div class="room-opt" data-room="other">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <span class="lab">Other</span>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Setup method</label>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="setupByQR()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg>
+            Scan QR
+          </button>
+          <button class="btn btn-ghost" style="flex:1;justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            WiFi pair
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('addDeviceModal')">Cancel</button>
+      <button class="btn btn-accent" onclick="addDevice()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add device
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RENAME MODAL ===== -->
+<div class="modal-backdrop" id="renameModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Rename device</h3>
+      <button class="x" onclick="closeModal('renameModal')">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>New name</label>
+        <input id="renameInput" type="text" />
+      </div>
+      <div class="field">
+        <label>Room type</label>
+        <div class="room-picker" id="renameRoomPicker">
+          <!-- Same options injected by JS -->
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" onclick="deleteDevice()" style="margin-right:auto;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Remove
+      </button>
+      <button class="btn btn-ghost" onclick="closeModal('renameModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRename()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastText">Done</span>
+</div>
+
+<!-- ===== APP ===== -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <!-- AERVA LOGO -->
+      <div class="brand-logo">
+        <svg viewBox="0 0 40 40" width="40" height="40">
+          <!-- Outer ring -->
+          <circle cx="20" cy="20" r="18" fill="#0A2E50"/>
+          <!-- Wave/air motion arcs in yellow -->
+          <path d="M 10 22 Q 14 17, 20 19 T 30 21" stroke="#EFBE1D" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <path d="M 9 18 Q 15 13, 20 15 T 31 17" stroke="#EFBE1D" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+          <path d="M 11 26 Q 15 22, 20 24 T 29 25" stroke="#EFBE1D" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.5"/>
+          <!-- Center dot -->
+          <circle cx="20" cy="20" r="2" fill="#EFBE1D"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name">AERVA</div>
+        <div class="brand-sub">Breathe better</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Monitor</div>
+      <div class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V9.5z"/></svg>
+        Home
+      </div>
+      <div class="nav-item" data-view="device-detail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg>
+        My devices
+        <span class="nav-badge" style="background:var(--green-soft);color:var(--green)" id="deviceCountBadge">5</span>
+      </div>
+      <div class="nav-item" data-view="alerts" onclick="goToAlerts()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        Alerts
+        <span class="nav-badge" id="sidebarAlertBadge">3</span>
+      </div>
+
+      <div class="nav-label" style="margin-top:22px;">Workspace</div>
+      <div class="nav-item" onclick="openAddDevice()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add device
+      </div>
+      <div class="nav-item" data-view="reports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        Reports
+      </div>
+      <div class="nav-item" data-view="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">AK</div>
+        <div class="user-meta">
+          <div class="user-name">Ashish Kamble</div>
+          <div class="user-org">Zeptac · Admin</div>
+        </div>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span>AERVA</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current" id="crumbView">Home</span>
+      </div>
+      <div class="topbar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input placeholder="Search rooms, alerts…" />
+      </div>
+      <div class="topbar-actions">
+        <div class="live-pill">
+          <span class="live-dot"></span>
+          Live
+        </div>
+        <button class="icon-btn" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="ping"></span>
+        </button>
+        <button class="icon-btn" onclick="openAddDevice()" title="Add device">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ============ DASHBOARD VIEW ============ -->
+      <section class="view active" id="view-dashboard">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow-home">
+              <span class="home-dot"></span>
+              HOME · Overview
+            </div>
+            <div class="greeting mono">Good morning</div>
+            <h1 class="display-1">Good morning, <em>Ashish</em></h1>
+            <div class="sub mono"><span id="deviceCountText">5</span> rooms monitored · all sensors online · Pen, Maharashtra</div>
+          </div>
+          <div class="head-stats">
+            <div class="head-stat">
+              <div class="v"><span id="onlineCount">5</span><span style="color:var(--text-3);font-size:13px;">/<span id="totalCount">5</span></span></div>
+              <div class="l">Online</div>
+            </div>
+            <div class="div"></div>
+            <div class="head-stat">
+              <div class="v"><span class="accent">99.2%</span></div>
+              <div class="l">Uptime · 30d</div>
+            </div>
+            <div class="div"></div>
+            <div class="head-stat">
+              <div class="v">2</div>
+              <div class="l">Active alerts</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section header above the live readings -->
+        <div class="section-head">
+          <div>
+            <div class="section-title">Live readings</div>
+            <div class="section-sub mono">Living Room · Updated 14 sec ago</div>
+          </div>
+        </div>
+
+        <div class="sensor-grid">
+          <div class="card sensor-card" data-sid="co2" onclick="selectHomeSensor('co2')">
+            <div class="sc-head">
+              <div class="sc-name">CO<span class="sub">₂</span></div>
+              <div class="sc-status green"></div>
+            </div>
+            <div class="sc-value"><span class="n">847</span><span class="u">ppm</span></div>
+            <div class="sc-foot">
+              <div class="sc-trend up">▲ 4.2%</div>
+              <svg class="sc-spark" viewBox="0 0 64 22" preserveAspectRatio="none">
+                <path d="M0,15 L8,13 L16,16 L24,11 L32,12 L40,9 L48,11 L56,7 L64,8" fill="none" stroke="#1FA063" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M0,15 L8,13 L16,16 L24,11 L32,12 L40,9 L48,11 L56,7 L64,8 L64,22 L0,22 Z" fill="url(#sparkGrad1)" opacity="0.18"/>
+                <defs><linearGradient id="sparkGrad1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1FA063"/><stop offset="100%" stop-color="#1FA063" stop-opacity="0"/></linearGradient></defs>
+              </svg>
+            </div>
+          </div>
+
+          <div class="card sensor-card" data-sid="co" onclick="selectHomeSensor('co')">
+            <div class="sc-head">
+              <div class="sc-name">CO</div>
+              <div class="sc-status green"></div>
+            </div>
+            <div class="sc-value"><span class="n">1.4</span><span class="u">ppm</span></div>
+            <div class="sc-foot">
+              <div class="sc-trend flat">— stable</div>
+              <svg class="sc-spark" viewBox="0 0 64 22" preserveAspectRatio="none">
+                <path d="M0,14 L8,13 L16,14 L24,13 L32,14 L40,13 L48,14 L56,12 L64,13" fill="none" stroke="#1FA063" stroke-width="1.6"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="card sensor-card" data-sid="o2" onclick="selectHomeSensor('o2')">
+            <div class="sc-head">
+              <div class="sc-name">O<span class="sub">₂</span></div>
+              <div class="sc-status green"></div>
+            </div>
+            <div class="sc-value"><span class="n">20.9</span><span class="u">%</span></div>
+            <div class="sc-foot">
+              <div class="sc-trend flat">— 0.0%</div>
+              <svg class="sc-spark" viewBox="0 0 64 22" preserveAspectRatio="none">
+                <path d="M0,11 L8,12 L16,11 L24,12 L32,11 L40,12 L48,11 L56,11 L64,11" fill="none" stroke="#1FA063" stroke-width="1.6"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="card sensor-card" data-sid="pm25" onclick="selectHomeSensor('pm25')">
+            <div class="sc-head">
+              <div class="sc-name">PM2.5</div>
+              <div class="sc-status yellow"></div>
+            </div>
+            <div class="sc-value"><span class="n">42</span><span class="u">μg/m³</span></div>
+            <div class="sc-foot">
+              <div class="sc-trend up">▲ 12%</div>
+              <svg class="sc-spark" viewBox="0 0 64 22" preserveAspectRatio="none">
+                <path d="M0,16 L8,15 L16,14 L24,12 L32,10 L40,9 L48,7 L56,6 L64,5" fill="none" stroke="#EFBE1D" stroke-width="1.6"/>
+                <path d="M0,16 L8,15 L16,14 L24,12 L32,10 L40,9 L48,7 L56,6 L64,5 L64,22 L0,22 Z" fill="url(#sparkGrad2)" opacity="0.25"/>
+                <defs><linearGradient id="sparkGrad2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#EFBE1D"/><stop offset="100%" stop-color="#EFBE1D" stop-opacity="0"/></linearGradient></defs>
+              </svg>
+            </div>
+          </div>
+
+          <div class="card sensor-card" data-sid="temp" onclick="selectHomeSensor('temp')">
+            <div class="sc-head">
+              <div class="sc-name">Temp</div>
+              <div class="sc-status green"></div>
+            </div>
+            <div class="sc-value"><span class="n">28.4</span><span class="u">°C</span></div>
+            <div class="sc-foot">
+              <div class="sc-trend up">▲ 0.3°</div>
+              <svg class="sc-spark" viewBox="0 0 64 22" preserveAspectRatio="none">
+                <path d="M0,13 L8,14 L16,12 L24,13 L32,11 L40,12 L48,10 L56,11 L64,9" fill="none" stroke="#2C6FB5" stroke-width="1.6"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="card sensor-card" data-sid="rh" onclick="selectHomeSensor('rh')">
+            <div class="sc-head">
+              <div class="sc-name">RH</div>
+              <div class="sc-status green"></div>
+            </div>
+            <div class="sc-value"><span class="n">54</span><span class="u">%</span></div>
+            <div class="sc-foot">
+              <div class="sc-trend down">▼ 2.1%</div>
+              <svg class="sc-spark" viewBox="0 0 64 22" preserveAspectRatio="none">
+                <path d="M0,9 L8,10 L16,11 L24,10 L32,12 L40,13 L48,12 L56,14 L64,15" fill="none" stroke="#1DA1B5" stroke-width="1.6"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline sensor detail panel (opens when a sensor card is clicked) -->
+        <div class="home-sensor-detail" id="homeSensorDetail" style="display:none;">
+          <div class="hsd-head">
+            <div>
+              <div class="eyebrow" id="hsdEyebrow">PARTICULATE</div>
+              <h2 class="hsd-title" id="hsdTitle">PM2.5</h2>
+              <div class="hsd-fullname mono" id="hsdFullName">Fine Particulate Matter · Living Room</div>
+            </div>
+            <div class="hsd-head-right">
+              <div class="live-pill"><span class="live-dot"></span>LIVE</div>
+              <button class="icon-btn" onclick="closeHomeSensorDetail()" title="Close" aria-label="Close detail panel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="hsd-body">
+            <!-- LEFT: big reading + threshold + 24h stats -->
+            <div class="hsd-reading">
+              <div class="hsd-value">
+                <span class="n" id="hsdValue">42</span>
+                <span class="u" id="hsdUnit">μg/m³</span>
+                <span class="hsd-status" id="hsdStatus">Moderate</span>
+              </div>
+
+              <div class="threshold-bar-wrap" style="margin:14px 0;">
+                <div class="threshold-bar">
+                  <div class="threshold-marker" id="hsdMarker" style="left:42%;"></div>
+                </div>
+                <div class="threshold-labels" id="hsdThresholdLabels">
+                  <span>SAFE 0–35</span>
+                  <span>MODERATE 35–75</span>
+                  <span>UNSAFE 75+</span>
+                </div>
+              </div>
+
+              <div class="reading-stats">
+                <div class="reading-stat">
+                  <div class="l">24h Avg</div>
+                  <div class="v" id="hsdAvg">38.6</div>
+                </div>
+                <div class="reading-stat">
+                  <div class="l">Peak today</div>
+                  <div class="v" id="hsdPeak">61.2</div>
+                </div>
+                <div class="reading-stat">
+                  <div class="l">Variance</div>
+                  <div class="v" id="hsdVar">±8.4</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT: educational "What is X" -->
+            <div class="hsd-edu">
+              <div class="edu-eyebrow">What is <span id="hsdSensorBadge">PM2.5</span></div>
+              <div class="edu-desc" id="hsdDescription">Fine particulate matter — particles 2.5 micrometers or smaller — penetrates deep into the lungs and even the bloodstream. Common sources include cooking, candles, incense, and outdoor air entering the home.</div>
+              <div class="edu-bullets" id="hsdBullets"></div>
+            </div>
+          </div>
+
+          <div class="hsd-foot">
+            <span class="mono" style="font-size:11px;color:var(--text-3);">Updated 14 sec ago · Living Room · H487</span>
+            <button class="btn btn-ghost btn-sm" onclick="goToFullSensorDetail()">
+              View full history &amp; chart
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Top: AQI Hero (left) + Device Panel (right) — matches aerva.vercel.app -->
+        <div class="dash-grid">
+          <div class="card aqi-hero">
+            <div class="aqi-head">
+              <div class="lbl">
+                <div class="eyebrow">Primary room</div>
+                <div class="name">
+                  <span id="primaryRoomName">Living Room</span>
+                  <button class="rename-btn" onclick="openRename('living-room')" title="Rename">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                </div>
+                <div class="meta-row" style="margin-top:6px;">
+                  <span>AERVA Home · SN H487</span>
+                  <span class="dot"></span>
+                  <span id="liveTime">14:32:18 IST</span>
+                </div>
+              </div>
+              <div class="live-pill" style="align-self:flex-start;">
+                <span class="live-dot"></span>
+                LIVE
+              </div>
+            </div>
+
+            <div class="gauge-row">
+              <div class="gauge-wrap">
+                <svg viewBox="0 0 200 200">
+                  <circle cx="100" cy="100" r="84" fill="none" stroke="#EEF2F7" stroke-width="14" stroke-dasharray="395.84 527.78" />
+                  <circle id="aqiArc" cx="100" cy="100" r="84" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-linecap="round" stroke-dasharray="178 527.78" stroke-dashoffset="0" />
+                  <defs>
+                    <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#1FA063"/>
+                      <stop offset="60%" stop-color="#EFBE1D"/>
+                      <stop offset="100%" stop-color="#D63D3D"/>
+                    </linearGradient>
+                  </defs>
+                  <g stroke="#D6DCE6" stroke-width="1.5" transform="translate(100,100)">
+                    <line x1="0" y1="-72" x2="0" y2="-66" transform="rotate(-135)"/>
+                    <line x1="0" y1="-72" x2="0" y2="-66" transform="rotate(-90)"/>
+                    <line x1="0" y1="-72" x2="0" y2="-66" transform="rotate(-45)"/>
+                    <line x1="0" y1="-72" x2="0" y2="-66" transform="rotate(0)"/>
+                    <line x1="0" y1="-72" x2="0" y2="-66" transform="rotate(45)"/>
+                  </g>
+                </svg>
+                <div class="gauge-center">
+                  <div class="gauge-value">68</div>
+                  <div class="gauge-unit">AQI · Index</div>
+                  <div class="gauge-status">Moderate</div>
+                </div>
+              </div>
+
+              <div class="aqi-breakdown">
+                <div class="bd-row">
+                  <span class="k">PM2.5</span>
+                  <div class="bd-bar"><div class="fill" style="width:42%"></div></div>
+                  <span class="v">28<span class="u">μg/m³</span></span>
+                </div>
+                <div class="bd-row">
+                  <span class="k">CO₂</span>
+                  <div class="bd-bar"><div class="fill" style="width:55%"></div></div>
+                  <span class="v">847<span class="u">ppm</span></span>
+                </div>
+                <div class="bd-row">
+                  <span class="k">CO</span>
+                  <div class="bd-bar"><div class="fill" style="width:18%"></div></div>
+                  <span class="v">1.4<span class="u">ppm</span></span>
+                </div>
+                <div class="bd-row">
+                  <span class="k">O₂</span>
+                  <div class="bd-bar"><div class="fill" style="width:88%"></div></div>
+                  <span class="v">20.9<span class="u">%</span></span>
+                </div>
+                <div class="bd-row">
+                  <span class="k">Temp</span>
+                  <div class="bd-bar"><div class="fill" style="width:62%"></div></div>
+                  <span class="v">28.4<span class="u">°C</span></span>
+                </div>
+                <div class="bd-row">
+                  <span class="k">Humidity</span>
+                  <div class="bd-bar"><div class="fill" style="width:54%"></div></div>
+                  <span class="v">54<span class="u">%</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card device-panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">My rooms</div>
+                <div class="mono" style="font-size:11px;color:var(--text-3);margin-top:2px;"><span id="roomCount">5</span> devices · home network</div>
+              </div>
+              <span class="panel-link" onclick="showView('device-detail')">View all →</span>
+            </div>
+            <div class="device-list" id="deviceList"></div>
+            <button class="add-device-btn" onclick="openAddDevice()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add another device
+            </button>
+          </div>
+        </div>
+
+        <div class="analytics-row">
+          <div class="card chart-card">
+            <div class="chart-head">
+              <div class="chart-title-block">
+                <div class="chart-title">PM2.5 trend</div>
+                <div class="chart-sub">Living Room · last 24 hours</div>
+              </div>
+              <div class="timeframe">
+                <button class="tf-btn" onclick="switchTf(event)">1H</button>
+                <button class="tf-btn active" onclick="switchTf(event)">24H</button>
+                <button class="tf-btn" onclick="switchTf(event)">7D</button>
+                <button class="tf-btn" onclick="switchTf(event)">30D</button>
+                <button class="tf-btn" onclick="switchTf(event)">Custom</button>
+              </div>
+            </div>
+            <div class="chart-canvas-wrap">
+              <canvas id="mainChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card ai-card">
+            <div class="ai-head">
+              <div class="ai-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              </div>
+              <div class="chart-title">AI tips for your home</div>
+            </div>
+            <div class="ai-insight">
+              <div class="title">PM2.5 spiking around 7 PM</div>
+              <div class="body">Particulate matter rises when you cook dinner. Try running the kitchen exhaust 10 min before and after cooking.</div>
+              <div class="action">Set a reminder →</div>
+            </div>
+            <div class="ai-insight green">
+              <div class="title">Bedroom air is excellent overnight</div>
+              <div class="body">CO₂ stays under 800 ppm — your sleep environment is in the optimal range. Keep windows cracked when possible.</div>
+            </div>
+            <div class="ai-insight red">
+              <div class="title">Kitchen humidity high after meals</div>
+              <div class="body">RH crosses 75% during cooking. Consider an exhaust fan upgrade or a small dehumidifier to prevent mold.</div>
+              <div class="action">Learn more →</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ DEVICE DETAIL ============ -->
+      <section class="view" id="view-device-detail">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow" style="margin-bottom:6px;">Device · AERVA Home · SN H487</div>
+            <h1 class="display-1">
+              <span id="detailRoomName">Living Room</span>
+              <button class="rename-btn" style="opacity:1;width:32px;height:32px;" onclick="openRename('living-room')" title="Rename room">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+            </h1>
+            <div class="sub mono">Ground floor · Online · firmware v2.4.1</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost" onclick="openRename('living-room')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Rename
+            </button>
+            <button class="btn btn-accent">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export
+            </button>
+          </div>
+        </div>
+
+        <!-- Sensor selection tabs -->
+        <div class="sensor-tabs-wrap">
+          <div class="sensor-tabs" id="sensorTabs"></div>
+        </div>
+
+        <!-- Educational card -->
+        <div class="card edu-card" style="margin-bottom:20px;" id="eduCard"></div>
+
+        <!-- Reading + Chart -->
+        <div class="detail-grid-3">
+          <div class="card reading-hero">
+            <div class="reading-head">
+              <div class="who">
+                <div class="reading-icon" id="readingIcon"></div>
+                <div class="reading-name">
+                  <div class="t" id="readingType">Particulate</div>
+                  <div class="b" id="readingName">PM2.5</div>
+                </div>
+              </div>
+              <div class="live-pill"><span class="live-dot"></span>LIVE</div>
+            </div>
+
+            <div class="reading-big">
+              <div class="n" id="readingValue">42</div>
+              <div class="u" id="readingUnit">μg/m³</div>
+            </div>
+
+            <div class="threshold-bar-wrap">
+              <div class="threshold-bar">
+                <div class="threshold-marker" id="readingMarker" style="left:42%;"></div>
+              </div>
+              <div class="threshold-labels" id="readingThresholds">
+                <span>SAFE 0–35</span>
+                <span>MODERATE 35–75</span>
+                <span>UNSAFE 75+</span>
+              </div>
+            </div>
+
+            <div class="reading-stats">
+              <div class="reading-stat">
+                <div class="l">24h Avg</div>
+                <div class="v" id="readingAvg">38.6</div>
+              </div>
+              <div class="reading-stat">
+                <div class="l">Peak today</div>
+                <div class="v" id="readingPeak">61.2</div>
+              </div>
+              <div class="reading-stat">
+                <div class="l">Variance</div>
+                <div class="v" id="readingVar">±8.4</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card chart-card">
+            <div class="chart-head">
+              <div class="chart-title-block">
+                <div class="chart-title">Historical trend</div>
+                <div class="chart-sub" id="chartSub">PM2.5 · last 24 hours · 5 min intervals</div>
+              </div>
+              <div class="timeframe">
+                <button class="tf-btn" onclick="switchTf(event)">1H</button>
+                <button class="tf-btn active" onclick="switchTf(event)">24H</button>
+                <button class="tf-btn" onclick="switchTf(event)">7D</button>
+                <button class="tf-btn" onclick="switchTf(event)">30D</button>
+              </div>
+            </div>
+            <div class="chart-canvas-wrap" style="height:320px;">
+              <canvas id="detailChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card readings-list-card">
+          <div class="chart-head">
+            <div class="chart-title-block">
+              <div class="chart-title">Last 12 readings</div>
+              <div class="chart-sub">Auto-refresh every 30 seconds</div>
+            </div>
+            <span class="panel-link">Export CSV →</span>
+          </div>
+          <div class="readings-list" id="readingsList"></div>
+        </div>
+      </section>
+
+      <!-- ============ ONBOARDING ============ -->
+      <section class="view" id="view-onboarding">
+        <div class="onboard-wrap">
+          <div class="page-head" style="margin-bottom:32px;justify-content:center;text-align:center;flex-direction:column;align-items:center;">
+            <div>
+              <h1 class="display-1">Onboard a <em>new device</em></h1>
+              <div class="sub mono">Five steps · about 3 minutes</div>
+            </div>
+          </div>
+
+          <div class="stepper">
+            <div class="step done"><div class="step-dot">✓</div><div class="step-label">Select</div></div>
+            <div class="step active"><div class="step-dot">2</div><div class="step-label">Scan QR</div></div>
+            <div class="step"><div class="step-dot">3</div><div class="step-label">WiFi</div></div>
+            <div class="step"><div class="step-dot">4</div><div class="step-label">Name room</div></div>
+            <div class="step"><div class="step-dot">5</div><div class="step-label">Done</div></div>
+          </div>
+
+          <div class="card qr-card">
+            <div class="eyebrow">Step 2 of 5</div>
+            <div class="display-2">Point camera at the QR code</div>
+            <div style="color:var(--text-3);font-size:13px;max-width:380px;margin:0 auto;">The QR sticker is on the back of your AERVA Home device, near the WiFi antenna.</div>
+
+            <div class="qr-scanner">
+              <div class="qr-corner tl"></div>
+              <div class="qr-corner tr"></div>
+              <div class="qr-corner bl"></div>
+              <div class="qr-corner br"></div>
+              <div class="qr-scan-line"></div>
+              <div class="qr-graphic"></div>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:6px;">
+              <button class="btn btn-ghost">Enter code manually</button>
+              <button class="btn btn-accent" onclick="showView('dashboard'); showToast('Device added successfully')">Continue →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ REPORTS ============ -->
+      <section class="view" id="view-reports">
+        <div class="page-head">
+          <div>
+            <h1 class="display-1">Export <em>reports</em></h1>
+            <div class="sub mono">Air quality history · PDF or Excel · custom date ranges</div>
+          </div>
+        </div>
+
+        <div class="reports-grid">
+          <div class="card report-config">
+            <div class="ss-head" style="margin-bottom:0;">
+              <h3 style="font-family:var(--font-display);font-size:18px;">Configure</h3>
+              <p style="font-size:12px;color:var(--text-3);margin-top:2px;">Pick what you want in your report</p>
+            </div>
+
+            <div class="field">
+              <label>Format</label>
+              <div class="format-tabs">
+                <div class="format-opt active" onclick="toggleFmt(event)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="9" y2="19"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+                  <span class="ft">PDF Report</span>
+                </div>
+                <div class="format-opt" onclick="toggleFmt(event)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                  <span class="ft">Excel (.xlsx)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Room</label>
+              <select id="reportRoom">
+                <option>All rooms</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Date range</label>
+              <div class="date-row">
+                <input type="date" value="2026-05-01" />
+                <input type="date" value="2026-05-24" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Include</label>
+              <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text-2);">
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--aerva-blue);"/> Sensor readings & averages</label>
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--aerva-blue);"/> Alert log & resolutions</label>
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--aerva-blue);"/> Daily summary</label>
+              </div>
+            </div>
+
+            <button class="btn btn-accent" style="width:100%;justify-content:center;padding:12px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Generate & Download
+            </button>
+          </div>
+
+          <div class="card report-preview">
+            <div class="chart-head" style="margin-bottom:18px;">
+              <div class="chart-title-block">
+                <div class="chart-title">Preview</div>
+                <div class="chart-sub">Live preview · updates as you configure</div>
+              </div>
+              <span class="mono" style="font-size:11px;color:var(--text-3);">Page 1 of 12</span>
+            </div>
+
+            <div class="preview-doc">
+              <div class="pdoc-head">
+                <div class="pdoc-brand">
+                  AERVA
+                  <div class="sub">BREATHE BETTER</div>
+                </div>
+                <div class="pdoc-meta">
+                  Report ID: AER-2026-0524<br>
+                  Generated: 24 May 2026<br>
+                  Home: Kamble residence
+                </div>
+              </div>
+              <div class="pdoc-title">Home Air Quality Report — May 2026</div>
+              <table class="pdoc-table">
+                <thead>
+                  <tr><th>Date</th><th>Room</th><th>PM2.5</th><th>CO₂</th><th>Avg AQI</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>20 May</td><td>Living Room</td><td>32.4</td><td>812</td><td>62</td><td style="color:#1FA063;">Safe</td></tr>
+                  <tr><td>20 May</td><td>Master Bedroom</td><td>28.1</td><td>798</td><td>58</td><td style="color:#1FA063;">Safe</td></tr>
+                  <tr><td>20 May</td><td>Kitchen</td><td>67.7</td><td>867</td><td>112</td><td style="color:#D63D3D;">Unsafe</td></tr>
+                  <tr><td>21 May</td><td>Living Room</td><td>35.2</td><td>823</td><td>65</td><td style="color:#1FA063;">Safe</td></tr>
+                  <tr><td>21 May</td><td>Kids Room</td><td>29.8</td><td>791</td><td>59</td><td style="color:#1FA063;">Safe</td></tr>
+                  <tr><td>22 May</td><td>Living Room</td><td>47.3</td><td>918</td><td>78</td><td style="color:#C28E00;">Moderate</td></tr>
+                  <tr><td>22 May</td><td>Master Bedroom</td><td>33.6</td><td>834</td><td>64</td><td style="color:#1FA063;">Safe</td></tr>
+                </tbody>
+              </table>
+              <div style="margin-top:14px;font-size:9.5px;color:#888;font-family:var(--font-mono);">
+                * Readings averaged from AERVA Home devices across 5 rooms. WHO AQ guideline reference applied.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ALERTS (Monitor → Alerts: Alert Feed only) ============ -->
+      <section class="view" id="view-alerts">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow-home" style="background:var(--red);">
+              <span class="home-dot" style="background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,0.3);"></span>
+              MONITOR · Alert Feed
+            </div>
+            <h1 class="display-1">Alert <em>feed</em></h1>
+            <div class="sub mono">Recent threshold events across all rooms · Live · Last sync 14 sec ago</div>
+          </div>
+          <div class="head-stats">
+            <div class="head-stat">
+              <div class="v" style="color:var(--red);">2</div>
+              <div class="l">Active</div>
+            </div>
+            <div class="div"></div>
+            <div class="head-stat">
+              <div class="v">4</div>
+              <div class="l">Last 24h</div>
+            </div>
+            <div class="div"></div>
+            <div class="head-stat">
+              <div class="v">12</div>
+              <div class="l">Last 7d</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px;">
+          <div class="feed-filter-row">
+            <select class="feed-filter">
+              <option>Last 24 hours</option>
+              <option>Last 7 days</option>
+              <option>Last 30 days</option>
+              <option>Custom range</option>
+            </select>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+              <span class="mono" style="font-size:11px;color:var(--text-3);">Showing 4 events</span>
+              <button class="btn btn-ghost btn-sm" onclick="goToAlerts(); switchSettingsPanel('alerts');" style="font-size:12px;padding:6px 12px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Manage alert rules
+              </button>
+            </div>
+          </div>
+
+          <div class="alerts-list">
+            <div class="alert-item critical">
+              <div class="alert-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div class="alert-body">
+                <div class="alert-title">PM2.5 above 75 μg/m³ in Kitchen</div>
+                <div class="alert-desc">Reading hit 89 μg/m³ during cooking. Turn on the exhaust fan and crack a window.</div>
+                <div class="alert-meta">
+                  <span>● Kitchen · H491</span>
+                  <span>⏱ 2 min ago</span>
+                </div>
+              </div>
+              <div class="alert-actions">
+                <div class="alert-value">89 μg/m³</div>
+              </div>
+            </div>
+
+            <div class="alert-item warning">
+              <div class="alert-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div class="alert-body">
+                <div class="alert-title">CO₂ above 900 ppm in Master Bedroom</div>
+                <div class="alert-desc">Approaching 1000 ppm overnight. Consider keeping a window open or running ventilation.</div>
+                <div class="alert-meta">
+                  <span>● Master Bedroom · H487</span>
+                  <span>⏱ 14 min ago</span>
+                </div>
+              </div>
+              <div class="alert-actions">
+                <div class="alert-value">912 ppm</div>
+              </div>
+            </div>
+
+            <div class="alert-item cleared">
+              <div class="alert-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="alert-body">
+                <div class="alert-title">Humidity below 65% in Bathroom</div>
+                <div class="alert-desc">RH was 82% after a shower. Returned to 58% within 40 minutes. Auto-resolved.</div>
+                <div class="alert-meta">
+                  <span>● Bathroom · H490</span>
+                  <span>⏱ 3 hr ago · resolved</span>
+                </div>
+              </div>
+              <div class="alert-actions">
+                <div class="alert-value">58%</div>
+              </div>
+            </div>
+
+            <div class="alert-item cleared">
+              <div class="alert-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="alert-body">
+                <div class="alert-title">Living Room device reconnected</div>
+                <div class="alert-desc">H487 went offline at 09:14 due to WiFi timeout. Reconnected at 09:18.</div>
+                <div class="alert-meta">
+                  <span>● Living Room · H487</span>
+                  <span>⏱ 5 hr ago · resolved</span>
+                </div>
+              </div>
+              <div class="alert-actions">
+                <div class="alert-value">Online</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="feed-note">
+            <b>Note:</b> Alert feed will be permanently deleted after a 30-day period.
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SETTINGS ============ -->
+      <section class="view" id="view-settings">
+        <div class="page-head">
+          <div>
+            <h1 class="display-1">Settings</h1>
+            <div class="sub mono">Account · units · notifications · devices</div>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="settings-nav">
+            <div class="snav-item active" data-section="general" onclick="switchSettingsPanel('general')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              General
+            </div>
+            <div class="snav-item" data-section="notifications" onclick="switchSettingsPanel('notifications')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              Notifications
+            </div>
+            <div class="snav-item" data-section="devices" onclick="switchSettingsPanel('devices')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h.01"/></svg>
+              Devices
+            </div>
+            <div class="snav-item" data-section="alerts" onclick="switchSettingsPanel('alerts')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Alerts
+              <span class="nav-badge" id="settingsAlertBadge">3</span>
+            </div>
+            <div class="snav-item snav-reports-link" onclick="showView('reports')" title="Reports">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Reports
+              <svg class="snav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto;width:14px;height:14px;opacity:0.5;"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <div class="snav-item" data-section="account" onclick="switchSettingsPanel('account')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Account
+            </div>
+          </div>
+
+          <div class="settings-content-wrap">
+
+            <!-- GENERAL PANEL -->
+            <div class="settings-panel active" id="panel-general">
+              <div class="card settings-content">
+                <div class="settings-section">
+                  <div class="ss-head">
+                    <h3>General preferences</h3>
+                    <p>How readings, units, and times display across your dashboard.</p>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="sr-info">
+                      <div class="sr-title">AQI standard</div>
+                      <div class="sr-desc">Calculation method for the air quality index</div>
+                    </div>
+                    <div class="segmented">
+                      <button class="seg-btn active">CPCB (IN)</button>
+                      <button class="seg-btn">US EPA</button>
+                      <button class="seg-btn">WHO</button>
+                    </div>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="sr-info">
+                      <div class="sr-title">Auto-refresh dashboard</div>
+                      <div class="sr-desc">How often live readings update</div>
+                    </div>
+                    <div class="segmented">
+                      <button class="seg-btn">5s</button>
+                      <button class="seg-btn active">30s</button>
+                      <button class="seg-btn">1min</button>
+                    </div>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="sr-info">
+                      <div class="sr-title">Notification sounds</div>
+                      <div class="sr-desc">Audible alerts when readings cross thresholds</div>
+                    </div>
+                    <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- NOTIFICATIONS PANEL -->
+            <div class="settings-panel" id="panel-notifications">
+              <div class="card settings-content">
+                <div class="settings-section">
+                  <div class="ss-head">
+                    <h3>Notification preferences</h3>
+                    <p>Where and how often you receive alerts about your air quality.</p>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="sr-info">
+                      <div class="sr-title">Push notifications</div>
+                      <div class="sr-desc">Send alerts to this device when thresholds are crossed</div>
+                    </div>
+                    <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="sr-info">
+                      <div class="sr-title">Email alerts</div>
+                      <div class="sr-desc">Receive critical alerts at ashish@zeptac.com</div>
+                    </div>
+                    <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="sr-info">
+                      <div class="sr-title">Daily summary</div>
+                      <div class="sr-desc">Recap of yesterday's air quality every morning at 8 AM</div>
+                    </div>
+                    <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="sr-info">
+                      <div class="sr-title">Quiet hours</div>
+                      <div class="sr-desc">Suppress non-critical alerts during sleep hours</div>
+                    </div>
+                    <div class="segmented">
+                      <button class="seg-btn">Off</button>
+                      <button class="seg-btn active">22:00 – 07:00</button>
+                      <button class="seg-btn">Custom</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ALERTS PANEL (the main one — alert management UI lives here) -->
+            <div class="settings-panel" id="panel-alerts">
+              <div class="settings-panel-tinted">
+                <div class="alert-tabs-bar">
+                  <div class="alert-tabs-left">
+                    <div class="alert-mgmt-title">Alert Management</div>
+                  </div>
+                  <div class="alert-tabs-right">
+                    <div class="alert-search">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                      <input id="alertSearch" placeholder="Search alerts…" oninput="filterAlertRules(this.value)" />
+                    </div>
+                    <button class="btn btn-accent" onclick="addAlertRule()" id="newAlertBtn">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      New alert
+                    </button>
+                  </div>
+                </div>
+
+                
+                <div id="alertManagePanel">
+                  <div id="alertRulesList"></div>
+                  <div class="add-alert-card" onclick="addAlertRule()" style="margin-top:14px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <div class="t">Add another alert</div>
+                    <div class="d">Trigger a notification when a sensor reading crosses your threshold</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- DEVICES PANEL -->
+            <div class="settings-panel" id="panel-devices">
+              <div class="card settings-content">
+                <div class="settings-section">
+                  <div class="ss-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+                    <div>
+                      <h3>Connected devices</h3>
+                      <p>Manage AERVA Home devices linked to your account.</p>
+                    </div>
+                    <button class="btn btn-accent" onclick="openAddDevice()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Add device
+                    </button>
+                  </div>
+
+                  <div class="device-mgmt-list" id="deviceMgmtList"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ACCOUNT PANEL -->
+            <div class="settings-panel" id="panel-account">
+              <div class="card settings-content">
+                <div class="settings-section">
+                  <div class="ss-head">
+                    <h3>Account</h3>
+                    <p>Your profile and workspace information.</p>
+                  </div>
+
+                  <div style="display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--border-soft);">
+                    <div class="user-avatar" style="width:56px;height:56px;font-size:18px;">AK</div>
+                    <div style="flex:1;">
+                      <div style="font-size:15px;font-weight:600;color:var(--text-1);">Ashish Kamble</div>
+                      <div style="font-size:12.5px;color:var(--text-3);font-family:var(--font-mono);">ashish@zeptac.com</div>
+                    </div>
+                    <button class="btn btn-ghost">Edit profile</button>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="sr-info">
+                      <div class="sr-title">Workspace</div>
+                      <div class="sr-desc">Zeptac · Admin · 5 devices</div>
+                    </div>
+                    <button class="btn btn-ghost">Switch</button>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="sr-info">
+                      <div class="sr-title">Two-factor authentication</div>
+                      <div class="sr-desc">Add an extra layer of security to your account</div>
+                    </div>
+                    <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="sr-info">
+                      <div class="sr-title">Sign out</div>
+                      <div class="sr-desc">End your session on this device</div>
+                    </div>
+                    <button class="btn btn-danger">Sign out</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- MOBILE NAV -->
+  <nav class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <div class="mnav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V9.5z"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="mnav-item" data-view="device-detail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h.01M12 12h.01M18 12h.01"/></svg>
+        <span>Rooms</span>
+      </div>
+      <div class="mnav-item" onclick="openAddDevice()" style="position:relative;">
+        <div style="width:42px;height:42px;border-radius:50%;background:var(--aerva-yellow);display:grid;place-items:center;color:var(--aerva-blue);box-shadow:var(--shadow-yellow);margin-top:-12px;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span style="margin-top:-3px;">Add</span>
+      </div>
+      <div class="mnav-item" data-view="alerts" onclick="goToAlerts()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span>Alerts</span>
+      </div>
+      <div class="mnav-item" data-view="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08 4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08 4.24-4.24"/></svg>
+        <span>More</span>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<script>
+  // ====== ROOM ICONS ======
+  const roomIcons = {
+    living: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 11v8a1 1 0 0 0 1 1h2v-5h14v5h2a1 1 0 0 0 1-1v-8"/><path d="M4 11V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v4"/><path d="M5 11h14"/></svg>',
+    bedroom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12v8h20v-8"/><path d="M2 12V7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5"/><path d="M6 12V9a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3M13 12V9a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3"/></svg>',
+    kitchen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/></svg>',
+    office: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="2" y1="13" x2="22" y2="13"/></svg>',
+    kids: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg>',
+    bathroom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h18M5 12V7a3 3 0 0 1 6 0M5 12v6a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-6"/></svg>',
+    balcony: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21V8a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v13"/><line x1="3" y1="21" x2="21" y2="21"/><line x1="9" y1="11" x2="9" y2="21"/><line x1="15" y1="11" x2="15" y2="21"/></svg>',
+    other: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>'
+  };
+
+  // ====== STATE ======
+  let devices = [
+    { id: 'living-room', name: 'Living Room', room: 'living', sn: 'H487', aqi: 68, status: 'green', spark: [12,14,11,15,13,16,12,14] },
+    { id: 'master-bedroom', name: 'Master Bedroom', room: 'bedroom', sn: 'H488', aqi: 54, status: 'green', spark: [10,9,11,8,10,9,11,10] },
+    { id: 'kitchen', name: 'Kitchen', room: 'kitchen', sn: 'H491', aqi: 142, status: 'bad', spark: [8,10,12,14,16,18,17,19] },
+    { id: 'kids-room', name: 'Kids Room', room: 'kids', sn: 'H489', aqi: 47, status: 'green', spark: [10,10,9,10,11,10,9,10] },
+    { id: 'home-office', name: 'Home Office', room: 'office', sn: 'H490', aqi: 71, status: 'warn', spark: [12,13,14,12,13,15,14,15] }
+  ];
+
+  let renamingDeviceId = null;
+  let selectedNewRoom = 'living';
+  let selectedRenameRoom = 'living';
+
+  // ====== SENSORS DATA + EDUCATIONAL CONTENT ======
+  // ===== HOME PAGE: inline sensor detail =====
+  function selectHomeSensor(id) {
+    const s = sensors.find(x => x.id === id);
+    if (!s) { console.warn('No sensor data for', id); return; }
+
+    // Toggle active card highlight
+    document.querySelectorAll('.sensor-card').forEach(c => c.classList.remove('active'));
+    const card = document.querySelector('.sensor-card[data-sid="' + id + '"]');
+    if (card) card.classList.add('active');
+
+    // Populate panel
+    document.getElementById('hsdEyebrow').textContent     = (s.type || '').toUpperCase();
+    document.getElementById('hsdTitle').textContent       = s.name.replace('₂', '₂'); // keep subscript
+    document.getElementById('hsdFullName').textContent    = (s.fullName || s.name) + ' · ' + (document.getElementById('primaryRoomName')?.textContent || 'Living Room');
+    document.getElementById('hsdValue').textContent       = s.value;
+    document.getElementById('hsdUnit').textContent        = s.unit || '';
+    document.getElementById('hsdSensorBadge').textContent = s.name;
+    document.getElementById('hsdDescription').textContent = s.description || '';
+    document.getElementById('hsdAvg').textContent         = s.avg24;
+    document.getElementById('hsdPeak').textContent        = s.peak;
+    document.getElementById('hsdVar').textContent         = '±' + s.variance;
+    document.getElementById('hsdMarker').style.left       = (s.markerPos || 50) + '%';
+
+    // Status pill
+    const statusEl = document.getElementById('hsdStatus');
+    statusEl.textContent = s.statusText || '';
+    statusEl.className   = 'hsd-status ' + (s.status || '');
+
+    // Threshold labels
+    document.getElementById('hsdThresholdLabels').innerHTML =
+      (s.thresholds || []).map(t => '<span>' + t + '</span>').join('');
+
+    // Educational bullets
+    document.getElementById('hsdBullets').innerHTML =
+      (s.bullets || []).map(b =>
+        '<span class="edu-bullet"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>' + b + '</span>'
+      ).join('');
+
+    // Remember this selection in case the user clicks "View full history"
+    window.__homeSelectedSensor = id;
+
+    // Reveal the panel and scroll it into view smoothly
+    const panel = document.getElementById('homeSensorDetail');
+    if (panel) {
+      panel.style.display = 'block';
+      setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
+  }
+
+  function closeHomeSensorDetail() {
+    const panel = document.getElementById('homeSensorDetail');
+    if (panel) panel.style.display = 'none';
+    document.querySelectorAll('.sensor-card').forEach(c => c.classList.remove('active'));
+    window.__homeSelectedSensor = null;
+  }
+
+  function goToFullSensorDetail() {
+    const id = window.__homeSelectedSensor || 'pm25';
+    currentSensorId = id;
+    renderSensorTabs();
+    renderEducationCard();
+    renderReadingDetail();
+    showView('device-detail');
+  }
+
+    const sensors = [
+    {
+      id: 'aqi',
+      name: 'AQI',
+      fullName: 'Air Quality Index',
+      type: 'Composite',
+      value: 68,
+      unit: '',
+      status: 'moderate',
+      statusText: 'Moderate',
+      meterPct: 34,
+      avg24: 64, peak: 82, variance: 9.2,
+      thresholds: ['SAFE 0–50', 'MODERATE 51–100', 'POOR 101–300'],
+      markerPos: 34,
+      description: 'The Air Quality Index combines several pollutant readings — PM2.5, PM10, CO, NO₂, SO₂, O₃ — into one number from 0 to 500. Lower is better. Values above 100 mean sensitive groups should reduce outdoor activity; above 150 affects everyone.',
+      bullets: ['Optimal: 0–50', 'Reference: CPCB / WHO']
+    },
+    {
+      id: 'pm25',
+      name: 'PM2.5',
+      fullName: 'Fine Particulate Matter',
+      type: 'Particulate',
+      value: 42,
+      unit: 'μg/m³',
+      status: 'moderate',
+      statusText: 'Moderate',
+      meterPct: 56,
+      avg24: 38.6, peak: 61.2, variance: 8.4,
+      thresholds: ['SAFE 0–35', 'MODERATE 35–75', 'UNSAFE 75+'],
+      markerPos: 42,
+      description: 'PM2.5 refers to particles smaller than 2.5 micrometers — small enough to enter your lungs and bloodstream. Common indoor sources are cooking, candles, incense, mosquito coils, and outdoor air leaking in. Long-term exposure is linked to asthma, heart disease, and reduced lung function.',
+      bullets: ['WHO limit: 15 μg/m³', 'Source: cooking, traffic']
+    },
+    {
+      id: 'co2',
+      name: 'CO₂',
+      fullName: 'Carbon Dioxide',
+      type: 'Gas',
+      value: 847,
+      unit: 'ppm',
+      status: 'good',
+      statusText: 'Good',
+      meterPct: 42,
+      avg24: 798, peak: 912, variance: 64,
+      thresholds: ['GOOD 0–1000', 'POOR 1000–2000', 'BAD 2000+'],
+      markerPos: 42,
+      description: 'Carbon Dioxide is produced by breathing and combustion. It is harmless in small quantities, but builds up in poorly ventilated rooms — making people drowsy, reducing concentration, and impacting sleep quality. Levels above 1000 ppm indicate the room needs more fresh air.',
+      bullets: ['Optimal: below 1000 ppm', 'Tip: open a window']
+    },
+    {
+      id: 'co',
+      name: 'CO',
+      fullName: 'Carbon Monoxide',
+      type: 'Gas',
+      value: 1.4,
+      unit: 'ppm',
+      status: 'good',
+      statusText: 'Good',
+      meterPct: 16,
+      avg24: 1.2, peak: 2.1, variance: 0.3,
+      thresholds: ['SAFE 0–9', 'WARNING 9–35', 'DANGER 35+'],
+      markerPos: 16,
+      description: 'Carbon Monoxide is a colorless, odorless gas produced by incomplete combustion — gas stoves, geysers, candles, and indoor smoking. Even at low levels, prolonged exposure causes headaches, dizziness, and impaired cognition. High levels are life-threatening.',
+      bullets: ['Safe: below 9 ppm', 'Source: gas stoves']
+    },
+    {
+      id: 'o2',
+      name: 'O₂',
+      fullName: 'Oxygen',
+      type: 'Gas',
+      value: 20.9,
+      unit: '%',
+      status: 'good',
+      statusText: 'Optimal',
+      meterPct: 88,
+      avg24: 20.9, peak: 20.9, variance: 0.1,
+      thresholds: ['LOW <18%', 'OK 18–19.5%', 'OPTIMAL 19.5–23%'],
+      markerPos: 88,
+      description: 'Oxygen makes up about 21% of the air we breathe and is essential for life. Healthy indoor environments maintain O₂ levels between 19.5% and 23%. Reduced oxygen can cause fatigue, headaches, and impaired judgment — usually only a concern in tightly sealed spaces or after combustion events.',
+      bullets: ['Healthy: 19.5–23%', 'Critical: below 18%']
+    },
+    {
+      id: 'temp',
+      name: 'Temp',
+      fullName: 'Temperature',
+      type: 'Climate',
+      value: 28.4,
+      unit: '°C',
+      status: 'moderate',
+      statusText: 'Warm',
+      meterPct: 62,
+      avg24: 27.8, peak: 30.2, variance: 1.4,
+      thresholds: ['COOL <20°C', 'OPTIMAL 20–26°C', 'WARM 26+°C'],
+      markerPos: 62,
+      description: 'Indoor temperature affects comfort, sleep quality, and energy efficiency. The optimal range for living spaces is 20–26°C. Higher temperatures can affect concentration, sleep, and accelerate the off-gassing of VOCs from furniture and paints.',
+      bullets: ['Optimal: 20–26°C', 'Sleep best: 18–22°C']
+    },
+    {
+      id: 'rh',
+      name: 'RH',
+      fullName: 'Relative Humidity',
+      type: 'Climate',
+      value: 54,
+      unit: '%',
+      status: 'good',
+      statusText: 'Optimal',
+      meterPct: 54,
+      avg24: 52, peak: 68, variance: 4.2,
+      thresholds: ['DRY <40%', 'OPTIMAL 40–60%', 'HUMID 60+%'],
+      markerPos: 54,
+      description: 'Relative humidity measures the moisture in air. The ideal range is 40–60%. Low humidity causes dry skin, eyes, and respiratory irritation. High humidity (above 60%) encourages mold growth, dust mites, and worsens asthma. Bathrooms and kitchens typically spike during use.',
+      bullets: ['Ideal: 40–60%', 'Mold risk: >60% sustained']
+    }
+  ];
+
+  // Illustration SVGs per sensor — simple, on-brand
+  const illustrations = {
+    aqi: `<svg viewBox="0 0 200 160" fill="none">
+      <circle cx="100" cy="80" r="60" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1.5"/>
+      <circle cx="100" cy="80" r="40" fill="none" stroke="#EFBE1D" stroke-width="1" opacity="0.5"/>
+      <circle cx="100" cy="80" r="20" fill="#EFBE1D" opacity="0.3"/>
+      <path d="M 60 60 Q 80 50, 100 60 T 140 70" stroke="#0A2E50" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M 55 90 Q 80 80, 100 90 T 145 95" stroke="#0A2E50" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+      <path d="M 65 110 Q 85 102, 105 110 T 135 115" stroke="#0A2E50" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.4"/>
+      <circle cx="100" cy="80" r="4" fill="#0A2E50"/>
+    </svg>`,
+    pm25: `<svg viewBox="0 0 200 160" fill="none">
+      <rect x="40" y="80" width="120" height="60" rx="4" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1.5"/>
+      <path d="M 40 100 L 100 60 L 160 100" stroke="#EFBE1D" stroke-width="1.5" fill="#FFFCEF"/>
+      <rect x="80" y="100" width="20" height="40" fill="#0A2E50" opacity="0.2"/>
+      <rect x="110" y="115" width="22" height="25" fill="#0A2E50" opacity="0.15"/>
+      <circle cx="65" cy="40" r="3" fill="#0A2E50" opacity="0.4"/>
+      <circle cx="80" cy="30" r="2" fill="#0A2E50" opacity="0.3"/>
+      <circle cx="120" cy="35" r="2.5" fill="#0A2E50" opacity="0.5"/>
+      <circle cx="140" cy="50" r="2" fill="#0A2E50" opacity="0.3"/>
+      <circle cx="50" cy="55" r="2" fill="#0A2E50" opacity="0.4"/>
+      <circle cx="155" cy="25" r="1.5" fill="#0A2E50" opacity="0.3"/>
+      <circle cx="100" cy="20" r="2" fill="#0A2E50" opacity="0.4"/>
+    </svg>`,
+    co2: `<svg viewBox="0 0 200 160" fill="none">
+      <circle cx="70" cy="60" r="22" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1.5"/>
+      <text x="70" y="66" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="13" fill="#0A2E50">CO₂</text>
+      <circle cx="130" cy="50" r="18" fill="#FFFCEF" stroke="#EFBE1D" stroke-width="1.5"/>
+      <text x="130" y="55" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="10" fill="#0A2E50">CO₂</text>
+      <circle cx="155" cy="95" r="16" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1.5"/>
+      <text x="155" y="100" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="9" fill="#0A2E50">CO₂</text>
+      <circle cx="50" cy="115" r="14" fill="#FFFCEF" stroke="#EFBE1D" stroke-width="1.5"/>
+      <text x="50" y="119" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="8" fill="#0A2E50">CO₂</text>
+      <rect x="80" y="100" width="50" height="40" rx="4" fill="#0A2E50" opacity="0.15"/>
+      <rect x="92" y="115" width="10" height="25" fill="#0A2E50" opacity="0.25"/>
+    </svg>`,
+    co: `<svg viewBox="0 0 200 160" fill="none">
+      <rect x="60" y="80" width="80" height="50" rx="4" fill="#0A2E50" opacity="0.15"/>
+      <rect x="68" y="88" width="64" height="34" rx="2" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1.5"/>
+      <circle cx="80" cy="105" r="4" fill="#EFBE1D"/>
+      <circle cx="100" cy="105" r="4" fill="#EFBE1D"/>
+      <circle cx="120" cy="105" r="4" fill="#EFBE1D"/>
+      <path d="M 80 88 Q 75 60, 85 50 Q 90 40, 80 30" stroke="#0A2E50" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.4"/>
+      <path d="M 100 88 Q 95 65, 105 55 Q 110 45, 100 35" stroke="#0A2E50" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.5"/>
+      <path d="M 120 88 Q 115 60, 125 50 Q 130 40, 120 30" stroke="#0A2E50" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.4"/>
+    </svg>`,
+    o2: `<svg viewBox="0 0 200 160" fill="none">
+      <path d="M 100 30 Q 70 30, 60 65 Q 60 100, 80 120 Q 100 130, 120 120 Q 140 100, 140 65 Q 130 30, 100 30 Z" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1.5"/>
+      <path d="M 100 40 L 100 120" stroke="#EFBE1D" stroke-width="1.5"/>
+      <path d="M 85 60 Q 75 75, 80 90 Q 85 100, 92 100" stroke="#0A2E50" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <path d="M 115 60 Q 125 75, 120 90 Q 115 100, 108 100" stroke="#0A2E50" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <text x="100" y="78" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="16" fill="#0A2E50">O₂</text>
+    </svg>`,
+    temp: `<svg viewBox="0 0 200 160" fill="none">
+      <rect x="92" y="30" width="16" height="80" rx="8" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1.5"/>
+      <circle cx="100" cy="120" r="16" fill="#EFBE1D"/>
+      <rect x="96" y="55" width="8" height="58" fill="#0A2E50" opacity="0.4"/>
+      <circle cx="100" cy="120" r="6" fill="#0A2E50"/>
+      <line x1="75" y1="40" x2="85" y2="40" stroke="#0A2E50" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="75" y1="55" x2="82" y2="55" stroke="#0A2E50" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+      <line x1="75" y1="70" x2="85" y2="70" stroke="#0A2E50" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="75" y1="85" x2="82" y2="85" stroke="#0A2E50" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+      <line x1="75" y1="100" x2="85" y2="100" stroke="#0A2E50" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="155" cy="50" r="12" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1.5"/>
+      <g stroke="#EFBE1D" stroke-width="1.5" stroke-linecap="round">
+        <line x1="155" y1="30" x2="155" y2="34"/>
+        <line x1="155" y1="66" x2="155" y2="70"/>
+        <line x1="135" y1="50" x2="139" y2="50"/>
+        <line x1="171" y1="50" x2="175" y2="50"/>
+      </g>
+    </svg>`,
+    rh: `<svg viewBox="0 0 200 160" fill="none">
+      <path d="M 100 30 Q 70 60, 70 90 Q 70 120, 100 130 Q 130 120, 130 90 Q 130 60, 100 30 Z" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1.5"/>
+      <path d="M 100 50 Q 85 70, 85 90 Q 85 105, 100 110" stroke="#EFBE1D" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <ellipse cx="100" cy="95" rx="14" ry="8" fill="#FFFCEF" opacity="0.6"/>
+      <circle cx="55" cy="55" r="6" fill="#EFBE1D" opacity="0.7"/>
+      <path d="M 55 49 Q 50 58, 55 64 Q 60 58, 55 49 Z" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1"/>
+      <circle cx="160" cy="80" r="5" fill="#EFBE1D" opacity="0.6"/>
+      <path d="M 160 75 Q 155 83, 160 88 Q 165 83, 160 75 Z" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1"/>
+      <circle cx="45" cy="110" r="4" fill="#EFBE1D" opacity="0.5"/>
+      <path d="M 45 106 Q 41 113, 45 117 Q 49 113, 45 106 Z" fill="#FFF4D0" stroke="#EFBE1D" stroke-width="1"/>
+    </svg>`
+  };
+
+  let currentSensorId = 'pm25';
+
+  function statusClassFromText(t) {
+    const m = { 'good': 'good', 'optimal': 'good', 'moderate': 'moderate', 'warm': 'moderate', 'poor': 'poor', 'bad': 'bad', 'hazardous': 'hazardous' };
+    return m[t.toLowerCase()] || 'moderate';
+  }
+
+  function renderSensorTabs() {
+    const wrap = document.getElementById('sensorTabs');
+    if (!wrap) return;
+    wrap.innerHTML = sensors.map(s => `
+      <button class="stab ${s.id === currentSensorId ? 'active' : ''}" data-sid="${s.id}" onclick="selectSensor('${s.id}')">
+        <div class="st-head">
+          <span class="st-name">${s.name}</span>
+          <span class="st-dot ${s.status}"></span>
+        </div>
+        <div class="st-val"><span class="v">${s.value}</span><span class="u">${s.unit}</span></div>
+        <span class="st-status ${s.status}">${s.statusText}</span>
+        <div class="st-meter"><div class="fill ${s.status}" style="width:${s.meterPct}%"></div></div>
+      </button>
+    `).join('');
+  }
+
+  function renderEducationCard() {
+    const s = sensors.find(x => x.id === currentSensorId);
+    if (!s) return;
+    const card = document.getElementById('eduCard');
+    if (!card) return;
+    card.innerHTML = `
+      <div class="edu-body">
+        <div class="edu-eyebrow">What is ${s.name}</div>
+        <div class="edu-title">${s.fullName}</div>
+        <div class="edu-desc">${s.description}</div>
+        <div class="edu-bullets">
+          ${s.bullets.map(b => `<span class="edu-bullet">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+            ${b}
+          </span>`).join('')}
+        </div>
+      </div>
+      <div class="edu-illust">${illustrations[s.id] || ''}</div>
+    `;
+  }
+
+  function renderReadingDetail() {
+    const s = sensors.find(x => x.id === currentSensorId);
+    if (!s) return;
+    document.getElementById('readingType').textContent = s.type;
+    document.getElementById('readingName').textContent = s.name === 'RH' ? 'Humidity' : s.fullName;
+    document.getElementById('readingValue').textContent = s.value;
+    document.getElementById('readingUnit').textContent = s.unit;
+    document.getElementById('readingAvg').textContent = s.avg24;
+    document.getElementById('readingPeak').textContent = s.peak;
+    document.getElementById('readingVar').textContent = '±' + s.variance;
+    document.getElementById('readingMarker').style.left = s.markerPos + '%';
+    document.getElementById('chartSub').textContent = `${s.name} · last 24 hours · 5 min intervals`;
+    const tlabels = document.getElementById('readingThresholds');
+    tlabels.innerHTML = s.thresholds.map(t => `<span>${t}</span>`).join('');
+
+    // Icon swap
+    const icons = {
+      aqi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h6m6 0h6M12 3v6m0 6v6"/></svg>',
+      pm25: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="1.5"/><circle cx="12" cy="9" r="1.5"/><circle cx="18" cy="5" r="1.5"/><circle cx="9" cy="14" r="1.5"/><circle cx="17" cy="14" r="1.5"/><circle cx="6" cy="18" r="1.5"/><circle cx="14" cy="19" r="1.5"/></svg>',
+      co2: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><text x="12" y="15" text-anchor="middle" font-family="JetBrains Mono" font-size="8" font-weight="700" fill="currentColor" stroke="none">CO₂</text></svg>',
+      co: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><text x="12" y="15" text-anchor="middle" font-family="JetBrains Mono" font-size="9" font-weight="700" fill="currentColor" stroke="none">CO</text></svg>',
+      o2: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><text x="12" y="15" text-anchor="middle" font-family="JetBrains Mono" font-size="9" font-weight="700" fill="currentColor" stroke="none">O₂</text></svg>',
+      temp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>',
+      rh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.32 0L12 2.69z"/></svg>'
+    };
+    document.getElementById('readingIcon').innerHTML = icons[s.id] || icons.pm25;
+
+    // Update chart
+    if (window.detailChartInstance) {
+      const base = s.value;
+      const variance = Math.max(2, s.variance);
+      const newData = makeChartData(s.id.length, base, variance);
+      window.detailChartInstance.data.labels = newData.labels;
+      window.detailChartInstance.data.datasets[0].data = newData.data;
+      window.detailChartInstance.data.datasets[0].label = `${s.name} ${s.unit}`;
+      window.detailChartInstance.update();
+    }
+  }
+
+  function selectSensor(id) {
+    currentSensorId = id;
+    document.querySelectorAll('.stab').forEach(t => t.classList.toggle('active', t.dataset.sid === id));
+    renderEducationCard();
+    renderReadingDetail();
+  }
+
+  // ====== ALERT RULES ======
+  let alertRules = [
+    { id: 'a1', sensor: 'pm25', condition: 'above', value: 75, delayType: 'immediate', hours: 0, minutes: 0, email: '', emailOn: false, enabled: true },
+    { id: 'a2', sensor: 'co2', condition: 'above', value: 1000, delayType: 'after', hours: 0, minutes: 15, email: 'ashish@zeptac.com', emailOn: true, enabled: true },
+    { id: 'a3', sensor: 'temp', condition: 'above', value: 32, delayType: 'immediate', hours: 0, minutes: 0, email: '', emailOn: false, enabled: false }
+  ];
+
+  const sensorOptions = [
+    { id: 'aqi', name: 'AQI', unit: '' },
+    { id: 'pm25', name: 'PM2.5', unit: 'μg/m³' },
+    { id: 'co2', name: 'CO₂', unit: 'ppm' },
+    { id: 'co', name: 'CO', unit: 'ppm' },
+    { id: 'o2', name: 'O₂', unit: '%' },
+    { id: 'temp', name: 'Temperature', unit: '°C' },
+    { id: 'rh', name: 'Humidity', unit: '%' }
+  ];
+
+  function sensorOptionFor(id) {
+    return sensorOptions.find(s => s.id === id) || sensorOptions[0];
+  }
+
+  function renderAlertRules(filter) {
+    const list = document.getElementById('alertRulesList');
+    if (!list) return;
+    // Update badge count in both sidebar and settings sub-nav
+    const count = alertRules.filter(r => r.enabled).length;
+    const sBadge = document.getElementById('settingsAlertBadge');
+    if (sBadge) sBadge.textContent = count;
+    const nBadge = document.getElementById('sidebarAlertBadge');
+    if (nBadge) nBadge.textContent = count;
+    const f = (filter || '').toLowerCase();
+    const visible = alertRules.filter(r => {
+      if (!f) return true;
+      const so = sensorOptionFor(r.sensor);
+      return so.name.toLowerCase().includes(f) || r.condition.includes(f) || String(r.value).includes(f);
+    });
+    if (visible.length === 0) {
+      list.innerHTML = `<div style="text-align:center;padding:36px;color:var(--text-3);font-size:13px;">No alerts match "${filter}"</div>`;
+      return;
+    }
+    list.innerHTML = visible.map(r => {
+      const so = sensorOptionFor(r.sensor);
+      const condLabel = r.condition === 'above' ? 'above' : 'below';
+      return `
+      <div class="alert-rule ${r.enabled ? '' : 'disabled'}" data-id="${r.id}">
+        <div class="alert-rule-head">
+          <div class="alert-rule-summary">
+            <span class="lbl">Alert when</span>
+            <b>${so.name}</b>
+            <span class="lbl">is</span>
+            <span class="cond">${condLabel}</span>
+            <b>${r.value}${so.unit ? ' ' + so.unit : ''}</b>
+          </div>
+          <div class="alert-rule-actions">
+            <button class="alert-trash" onclick="deleteAlertRule('${r.id}')" title="Delete alert">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+            <div class="toggle ${r.enabled ? 'on' : ''}" onclick="toggleAlertRule('${r.id}')"></div>
+          </div>
+        </div>
+
+        <div class="alert-rule-body">
+          <div class="ar-field">
+            <label>Sensor</label>
+            <select onchange="updateAlertRule('${r.id}', 'sensor', this.value)">
+              ${sensorOptions.map(s => `<option value="${s.id}" ${s.id === r.sensor ? 'selected' : ''}>${s.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="ar-is">is</div>
+          <div class="ar-field">
+            <label>Condition</label>
+            <select onchange="updateAlertRule('${r.id}', 'condition', this.value)">
+              <option value="above" ${r.condition === 'above' ? 'selected' : ''}>Above</option>
+              <option value="below" ${r.condition === 'below' ? 'selected' : ''}>Below</option>
+            </select>
+          </div>
+          <div class="ar-field">
+            <label>Threshold ${so.unit ? '(' + so.unit + ')' : ''}</label>
+            <input type="number" value="${r.value}" onchange="updateAlertRule('${r.id}', 'value', this.value)"/>
+          </div>
+        </div>
+
+        <div class="alert-rule-extra">
+          <div class="ar-field">
+            <label>Send notification</label>
+            <select onchange="updateAlertRule('${r.id}', 'delayType', this.value)">
+              <option value="immediate" ${r.delayType === 'immediate' ? 'selected' : ''}>Immediately</option>
+              <option value="after" ${r.delayType === 'after' ? 'selected' : ''}>After a delay</option>
+            </select>
+          </div>
+          <div class="ar-field">
+            <label>Hours</label>
+            <input type="number" min="0" value="${r.hours}" ${r.delayType === 'immediate' ? 'disabled' : ''} onchange="updateAlertRule('${r.id}', 'hours', this.value)"/>
+          </div>
+          <div class="ar-field">
+            <label>Minutes</label>
+            <input type="number" min="0" max="59" value="${r.minutes}" ${r.delayType === 'immediate' ? 'disabled' : ''} onchange="updateAlertRule('${r.id}', 'minutes', this.value)"/>
+          </div>
+        </div>
+
+        <div class="alert-rule-email">
+          <label class="ar-check">
+            <input type="checkbox" ${r.emailOn ? 'checked' : ''} onchange="updateAlertRule('${r.id}', 'emailOn', this.checked)"/>
+            Also send to email recipient
+          </label>
+          ${r.emailOn ? `<input type="email" class="ar-email" placeholder="name@example.com" value="${r.email}" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;font-family:var(--font-sans);outline:none;" onchange="updateAlertRule('${r.id}', 'email', this.value)"/>` : ''}
+        </div>
+      </div>
+      `;
+    }).join('');
+  }
+
+  function addAlertRule() {
+    const newRule = {
+      id: 'a' + Date.now(),
+      sensor: 'pm25',
+      condition: 'above',
+      value: 75,
+      delayType: 'immediate',
+      hours: 0,
+      minutes: 0,
+      email: '',
+      emailOn: false,
+      enabled: true
+    };
+    alertRules.unshift(newRule);
+    renderAlertRules();
+    showToast('New alert created');
+    // Scroll to top of list
+    setTimeout(() => {
+      const list = document.getElementById('alertRulesList');
+      if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }
+
+  function deleteAlertRule(id) {
+    const r = alertRules.find(x => x.id === id);
+    if (!r) return;
+    const so = sensorOptionFor(r.sensor);
+    if (!confirm(`Delete this alert? "${so.name} ${r.condition} ${r.value}"`)) return;
+    alertRules = alertRules.filter(x => x.id !== id);
+    renderAlertRules();
+    showToast('Alert removed');
+  }
+
+  function toggleAlertRule(id) {
+    const r = alertRules.find(x => x.id === id);
+    if (!r) return;
+    r.enabled = !r.enabled;
+    renderAlertRules();
+    showToast(r.enabled ? 'Alert enabled' : 'Alert disabled');
+  }
+
+  function updateAlertRule(id, field, val) {
+    const r = alertRules.find(x => x.id === id);
+    if (!r) return;
+    if (field === 'value' || field === 'hours' || field === 'minutes') val = parseInt(val) || 0;
+    r[field] = val;
+    // Only re-render if the change affects the summary or visible fields
+    if (field === 'sensor' || field === 'condition' || field === 'value' || field === 'delayType' || field === 'emailOn') {
+      renderAlertRules();
+    }
+  }
+
+  function filterAlertRules(q) { renderAlertRules(q); }
+
+  function switchAlertTab(e, tab) {
+    // Kept for backwards-compat; the Alert Feed tab inside Settings was removed,
+    // so this becomes a no-op if the feed panel no longer exists.
+    const feedPanel = document.getElementById('alertFeedPanel');
+    if (!feedPanel) return;
+    document.querySelectorAll('.alert-tabs-left .alert-tab').forEach(t => t.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById('alertManagePanel').style.display = tab === 'manage' ? 'block' : 'none';
+    feedPanel.style.display = tab === 'feed' ? 'block' : 'none';
+    document.getElementById('newAlertBtn').style.display = tab === 'manage' ? 'inline-flex' : 'none';
+  }
+
+  // ====== MOBILE DRAWER TOGGLE ======
+  function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const ov = document.getElementById('sidebarOverlay');
+    if (!sb || !ov) return;
+    const open = sb.classList.toggle('open');
+    ov.classList.toggle('show', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+  // Auto-close drawer when a nav item is tapped (mobile UX)
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth > 768) return;
+    const sb = document.getElementById('sidebar');
+    if (!sb || !sb.classList.contains('open')) return;
+    if (e.target.closest('.nav-item, .sidebar-footer .btn')) {
+      setTimeout(toggleSidebar, 100);
+    }
+  });
+
+    // ====== NAV ======
+  // Monitor → Alerts: show the standalone Alert Feed view (read-only).
+  // (For rule management, users go to Settings → Alerts.)
+  function goToAlerts() {
+    showView('alerts');
+  }
+
+  // Switch sub-section panel inside Settings
+  function switchSettingsPanel(section) {
+    document.querySelectorAll('#view-settings .snav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.section === section);
+    });
+    document.querySelectorAll('#view-settings .settings-panel').forEach(p => {
+      p.classList.toggle('active', p.id === 'panel-' + section);
+    });
+    const labels = { general: 'Settings · General', notifications: 'Settings · Notifications', alerts: 'Settings · Alerts', devices: 'Settings · Devices', account: 'Settings · Account' };
+    const crumb = document.getElementById('crumbView');
+    if (crumb) crumb.textContent = labels[section] || 'Settings';
+    // Render devices list when switching to Devices panel
+    if (section === 'devices') renderDeviceMgmtList();
+  }
+
+  // Render device list inside Settings → Devices panel
+  function renderDeviceMgmtList() {
+    const wrap = document.getElementById('deviceMgmtList');
+    if (!wrap) return;
+    wrap.innerHTML = devices.map(d => `
+      <div class="device-mgmt-row">
+        <div class="device-status-dot ${d.status === 'green' ? '' : d.status}"></div>
+        <div class="device-info">
+          <div class="device-name">
+            <span class="room-icon">${roomIcons[d.room] || roomIcons.other}</span>
+            ${d.name}
+          </div>
+          <div class="device-loc">AERVA Home · ${d.sn} · firmware v2.4.1</div>
+        </div>
+        <div class="device-aqi">
+          ${d.status === 'off' ? '<span style="color:var(--text-mute)">offline</span>' : d.aqi}
+          <small>${d.status === 'off' ? '—' : 'AQI'}</small>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button class="device-action" onclick="openRename('${d.id}')" title="Rename">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const viewLabels = {
+    'dashboard': 'Home',
+    'device-detail': 'Rooms',
+    'alerts': 'Alert feed',
+    'onboarding': 'Add device',
+    'reports': 'Reports',
+    'settings': 'Settings'
+  };
+
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const el = document.getElementById('view-' + name);
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.nav-item, .mnav-item').forEach(n => {
+      n.classList.toggle('active', n.dataset.view === name);
+    });
+    document.getElementById('crumbView').textContent = viewLabels[name] || name;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  document.querySelectorAll('.nav-item, .mnav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      const v = item.dataset.view;
+      if (v) showView(v);
+    });
+  });
+
+  // ====== TIMEFRAME / FORMAT ======
+  function switchTf(e) {
+    e.target.parentElement.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+  }
+  function toggleFmt(e) {
+    const opt = e.currentTarget;
+    opt.parentElement.querySelectorAll('.format-opt').forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+  }
+
+  // ====== MODALS ======
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+  function openAddDevice() {
+    document.getElementById('newDeviceName').value = '';
+    selectedNewRoom = 'living';
+    document.querySelectorAll('#roomPicker .room-opt').forEach(o => o.classList.toggle('active', o.dataset.room === 'living'));
+    openModal('addDeviceModal');
+    setTimeout(() => document.getElementById('newDeviceName').focus(), 100);
+  }
+
+  function openRename(deviceId) {
+    const d = devices.find(x => x.id === deviceId);
+    if (!d) return;
+    renamingDeviceId = deviceId;
+    selectedRenameRoom = d.room;
+    document.getElementById('renameInput').value = d.name;
+    // Populate room picker for rename modal
+    const rp = document.getElementById('renameRoomPicker');
+    rp.innerHTML = Object.keys(roomIcons).map(k => `
+      <div class="room-opt ${k === d.room ? 'active' : ''}" data-room="${k}">
+        ${roomIcons[k]}
+        <span class="lab">${k.charAt(0).toUpperCase() + k.slice(1)}</span>
+      </div>
+    `).join('');
+    rp.querySelectorAll('.room-opt').forEach(o => {
+      o.addEventListener('click', () => {
+        rp.querySelectorAll('.room-opt').forEach(x => x.classList.remove('active'));
+        o.classList.add('active');
+        selectedRenameRoom = o.dataset.room;
+      });
+    });
+    openModal('renameModal');
+    setTimeout(() => { const i = document.getElementById('renameInput'); i.focus(); i.select(); }, 100);
+  }
+
+  // Room picker click handlers (Add modal)
+  document.querySelectorAll('#roomPicker .room-opt').forEach(o => {
+    o.addEventListener('click', () => {
+      document.querySelectorAll('#roomPicker .room-opt').forEach(x => x.classList.remove('active'));
+      o.classList.add('active');
+      selectedNewRoom = o.dataset.room;
+      // Auto-suggest name if empty
+      const input = document.getElementById('newDeviceName');
+      if (!input.value.trim()) {
+        const suggested = { living: 'Living Room', bedroom: 'Bedroom', kitchen: 'Kitchen', office: 'Home Office', kids: 'Kids Room', bathroom: 'Bathroom', balcony: 'Balcony', other: 'New Room' };
+        input.value = suggested[o.dataset.room] || '';
+      }
+    });
+  });
+
+  // ====== ADD DEVICE ======
+  function addDevice() {
+    const name = document.getElementById('newDeviceName').value.trim();
+    if (!name) {
+      document.getElementById('newDeviceName').focus();
+      document.getElementById('newDeviceName').style.borderColor = 'var(--red)';
+      return;
+    }
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const sn = 'H' + Math.floor(490 + Math.random() * 100);
+    const newDevice = {
+      id: id + '-' + Date.now().toString().slice(-4),
+      name: name,
+      room: selectedNewRoom,
+      sn: sn,
+      aqi: Math.floor(40 + Math.random() * 40),
+      status: 'green',
+      spark: Array.from({length: 8}, () => 10 + Math.random() * 6)
+    };
+    devices.push(newDevice);
+    renderDevices();
+    closeModal('addDeviceModal');
+    showToast(`${name} added — checking sensors…`);
+  }
+
+  function setupByQR() {
+    closeModal('addDeviceModal');
+    showView('onboarding');
+  }
+
+  // ====== RENAME / DELETE ======
+  function saveRename() {
+    const newName = document.getElementById('renameInput').value.trim();
+    if (!newName || !renamingDeviceId) return;
+    const d = devices.find(x => x.id === renamingDeviceId);
+    if (d) {
+      d.name = newName;
+      d.room = selectedRenameRoom;
+      renderDevices();
+      // Update detail view if showing
+      if (renamingDeviceId === 'living-room') {
+        document.getElementById('primaryRoomName').textContent = newName;
+        document.getElementById('detailRoomName').textContent = newName;
+      }
+      showToast(`Renamed to "${newName}"`);
+    }
+    closeModal('renameModal');
+  }
+
+  function deleteDevice() {
+    if (!renamingDeviceId) return;
+    const d = devices.find(x => x.id === renamingDeviceId);
+    if (!d) return;
+    if (!confirm(`Remove "${d.name}" from your network? Sensor data will be archived.`)) return;
+    devices = devices.filter(x => x.id !== renamingDeviceId);
+    renderDevices();
+    closeModal('renameModal');
+    showToast(`"${d.name}" removed`);
+  }
+
+  // ====== TOAST ======
+  let toastTimer;
+  function showToast(text) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastText').textContent = text;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ====== SPARK + RENDER DEVICES ======
+  function makeSpark(points, color) {
+    const max = Math.max(...points);
+    const min = Math.min(...points);
+    const range = max - min || 1;
+    const pts = points.map((p, i) => {
+      const x = (i / (points.length - 1)) * 48;
+      const y = 22 - ((p - min) / range) * 18 - 2;
+      return `${x},${y}`;
+    }).join(' L ');
+    return `<svg class="device-spark" viewBox="0 0 48 24" preserveAspectRatio="none">
+      <path d="M ${pts}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/>
+    </svg>`;
+  }
+
+  function statusColor(s) {
+    return s === 'green' ? 'var(--green)' : s === 'warn' ? 'var(--aerva-yellow)' : s === 'bad' ? 'var(--red)' : 'var(--text-mute)';
+  }
+
+  function renderDevices() {
+    const list = document.getElementById('deviceList');
+    list.innerHTML = devices.map(d => {
+      const sparkColor = d.status === 'green' ? '#1FA063' : d.status === 'warn' ? '#EFBE1D' : d.status === 'bad' ? '#D63D3D' : '#A8B5C8';
+      return `
+      <div class="device-row" data-id="${d.id}" onclick="onDeviceClick(event, '${d.id}')">
+        <div class="device-status-dot ${d.status === 'green' ? '' : d.status}"></div>
+        <div class="device-info">
+          <div class="device-name">
+            <span class="room-icon">${roomIcons[d.room] || roomIcons.other}</span>
+            ${d.name}
+          </div>
+          <div class="device-loc">AERVA Home · ${d.sn}</div>
+        </div>
+        ${makeSpark(d.spark, sparkColor)}
+        <div class="device-aqi">
+          ${d.status === 'off' ? '<span style="color:var(--text-mute)">offline</span>' : d.aqi}
+          <small>${d.status === 'off' ? '—' : 'AQI'}</small>
+        </div>
+        <div class="device-actions">
+          <button class="device-action" onclick="event.stopPropagation(); openRename('${d.id}')" title="Rename">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+    }).join('');
+
+    // Update counts
+    const count = devices.length;
+    const online = devices.filter(d => d.status !== 'off').length;
+    document.getElementById('deviceCountBadge').textContent = count;
+    document.getElementById('deviceCountText').textContent = count;
+    document.getElementById('onlineCount').textContent = online;
+    document.getElementById('totalCount').textContent = count;
+    document.getElementById('roomCount').textContent = count;
+
+    // Update report room dropdown
+    const sel = document.getElementById('reportRoom');
+    if (sel) {
+      sel.innerHTML = `<option>All rooms (${count})</option>` + devices.map(d => `<option>${d.name}</option>`).join('');
+    }
+  }
+
+  function onDeviceClick(e, id) {
+    if (e.target.closest('.device-action')) return;
+    showView('device-detail');
+  }
+
+  // ====== READINGS LIST ======
+  const now = new Date();
+  const readings = [];
+  for (let i = 0; i < 12; i++) {
+    const t = new Date(now.getTime() - i * 5 * 60 * 1000);
+    const v = (38 + Math.sin(i * 0.7) * 6 + Math.random() * 3).toFixed(1);
+    readings.push({ t: t.toTimeString().slice(0, 5), v: v, s: v > 35 ? 'yellow' : 'green' });
+  }
+  const readingsList = document.getElementById('readingsList');
+  if (readingsList) {
+    readingsList.innerHTML = readings.map(r => `
+      <div class="reading-item">
+        <span class="t">${r.t}</span>
+        <span class="v">
+          <span class="dot" style="background:${r.s === 'green' ? 'var(--green)' : 'var(--aerva-yellow)'};"></span>
+          ${r.v} μg/m³
+        </span>
+      </div>
+    `).join('');
+  }
+
+  // ====== CHARTS ======
+  Chart.defaults.font.family = "'JetBrains Mono', monospace";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = '#7B8AA0';
+
+  function makeChartData(seed, base, variance) {
+    const labels = [];
+    const data = [];
+    for (let i = 0; i < 24; i++) {
+      labels.push(`${String(i).padStart(2, '0')}:00`);
+      const v = base + Math.sin((i + seed) * 0.5) * variance + (Math.random() - 0.5) * variance * 0.4;
+      data.push(Math.max(0, parseFloat(v.toFixed(1))));
+    }
+    return { labels, data };
+  }
+
+  function initChart(canvasId, base, variance, height) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, height || 240);
+    gradient.addColorStop(0, 'rgba(239, 190, 29, 0.32)');
+    gradient.addColorStop(1, 'rgba(239, 190, 29, 0)');
+
+    const d = makeChartData(canvasId.length, base, variance);
+
+    return new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: d.labels,
+        datasets: [{
+          label: 'PM2.5 μg/m³',
+          data: d.data,
+          borderColor: '#EFBE1D',
+          backgroundColor: gradient,
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#EFBE1D',
+          pointHoverBorderColor: '#0A2E50',
+          pointHoverBorderWidth: 2
+        },
+        canvasId === 'detailChart' ? {
+          label: 'Safe limit',
+          data: Array(24).fill(35),
+          borderColor: 'rgba(31, 160, 99, 0.6)',
+          borderDash: [4, 4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false
+        } : null].filter(Boolean)
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: canvasId === 'detailChart' ? {
+            position: 'top', align: 'end',
+            labels: { boxWidth: 10, boxHeight: 2, padding: 14, font: { size: 10 } }
+          } : { display: false },
+          tooltip: {
+            backgroundColor: '#0A2E50',
+            borderColor: '#EFBE1D',
+            borderWidth: 1,
+            padding: 10,
+            titleFont: { family: 'JetBrains Mono', size: 10 },
+            bodyFont: { family: 'JetBrains Mono', size: 11 },
+            titleColor: '#A8B5C8',
+            bodyColor: '#fff',
+            displayColors: false
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: '#EEF1F6', drawTicks: false },
+            ticks: { maxTicksLimit: 8, padding: 8 },
+            border: { display: false }
+          },
+          y: {
+            grid: { color: '#EEF1F6', drawTicks: false },
+            ticks: { padding: 8 },
+            border: { display: false },
+            beginAtZero: true,
+            suggestedMax: canvasId === 'detailChart' ? 80 : undefined
+          }
+        }
+      }
+    });
+  }
+
+  // ====== LIVE TIME ======
+  function updateLiveTime() {
+    const el = document.getElementById('liveTime');
+    if (!el) return;
+    const t = new Date();
+    el.textContent = t.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' IST';
+  }
+
+  // ====== INIT ======
+  document.addEventListener('DOMContentLoaded', () => {
+    renderDevices();
+    renderSensorTabs();
+    renderEducationCard();
+    renderAlertRules();
+    initChart('mainChart', 38, 14, 240);
+    window.detailChartInstance = initChart('detailChart', 42, 16, 320);
+    renderReadingDetail();
+    updateLiveTime();
+    setInterval(updateLiveTime, 1000);
+
+    // Sidebar setting sub-nav
+    document.querySelectorAll('.snav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.snav-item').forEach(s => s.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+
+    // Alert tabs
+    document.querySelectorAll('.alert-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.alert-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+
+    // Segmented buttons
+    document.querySelectorAll('.segmented').forEach(group => {
+      group.querySelectorAll('.seg-btn').forEach(b => {
+        b.addEventListener('click', () => {
+          group.querySelectorAll('.seg-btn').forEach(x => x.classList.remove('active'));
+          b.classList.add('active');
+        });
+      });
+    });
+
+    // Keyboard: Enter in modals
+    document.getElementById('newDeviceName').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addDevice();
+    });
+    document.getElementById('renameInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') saveRename();
+    });
+
+    // Click backdrop to close
+    document.querySelectorAll('.modal-backdrop').forEach(bd => {
+      bd.addEventListener('click', (e) => {
+        if (e.target === bd) bd.classList.remove('show');
+      });
+    });
+
+    // Esc to close modals
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('show'));
+      }
+    });
+  });
+</script>
+</body>
+</html>

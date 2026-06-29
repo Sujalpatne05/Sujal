@@ -5,7 +5,7 @@ import { useApp } from '../store.jsx';
 import { ModalContext } from '../App.jsx';
 import { SENSORS } from '../data/sensors.js';
 import { RoomIcon, makeChartData } from '../data/devices.jsx';
-import { IconPlus, IconEdit, IconSparkle, IconChevron, IconRefresh, IconClose } from '../components/icons.jsx';
+import { IconPlus, IconEdit, IconSparkle, IconChevron, IconRefresh, IconClose, IconBell, IconSettings, IconFile } from '../components/icons.jsx';
 
 function timeAgo(ts) {
   if (!ts) return null;
@@ -81,7 +81,7 @@ function SensorCard({ sensor, onClick }) {
   const trendUp = Math.random() > 0.5;
 
   return (
-    <button className="card sensor-card" onClick={onClick}>
+    <button className="card sensor-card" onClick={onClick} style={{border:'1px solid var(--border)'}}>
       <div className="sc-head">
         <span className="sc-name">{sensor.name}</span>
         <span className={`sc-status ${tone}`} />
@@ -122,7 +122,7 @@ export default function Dashboard() {
       <div className="page-head">
         <div>
           <div className="eyebrow">
-            <span className="home-dot" />
+            <span className="home-dot" style={{display:'inline-block',width:'4px',height:'4px',borderRadius:'50%',background:'var(--text-3)',marginRight:'6px'}}/>
             HOME · Overview
           </div>
           <div className="greeting mono">Good morning</div>
@@ -135,7 +135,7 @@ export default function Dashboard() {
         </div>
         <div className="head-stats">
           <div className="head-stat">
-            <div className="v"><span className="accent">{onlineCount}</span>/<span style={{fontSize: '13px'}}>{devices.length}</span></div>
+            <div className="v"><span className="accent">{onlineCount}</span><span style={{fontSize: '13px', color:'var(--text-3)'}}>/{devices.length}</span></div>
             <div className="l">Online</div>
           </div>
           <div className="div" />
@@ -151,208 +151,249 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* LIVE READINGS SECTION */}
-      <div className="section-head">
-        <div>
-          <div className="section-title">Live readings</div>
-          <div className="section-sub mono">{primaryRoomName} · Updated {lastSyncText}</div>
-        </div>
+      {/* LIVE READINGS SECTION HEAD */}
+      <div style={{marginBottom:'20px'}}>
+        <div style={{fontSize:'16px',fontWeight:'600',fontFamily:'var(--font-display)',color:'var(--text-1)',marginBottom:'2px'}}>Live readings</div>
+        <div style={{fontSize:'11px',fontFamily:'var(--font-mono)',color:'var(--text-3)'}}>{primaryRoomName} · Updated {lastSyncText}</div>
       </div>
 
+      {/* SENSOR GRID - All 6 sensors */}
       <div className="sensor-grid">
         {allSensors.map(s => (
           <SensorCard key={s.id} sensor={s} onClick={() => setSelectedSensor(s)} />
         ))}
       </div>
 
-      {/* HOME SENSOR DETAIL (expandable) */}
-      {selectedSensor && (
-        <div className="home-sensor-detail" style={{ display: selectedSensor ? 'block' : 'none' }}>
-          <div className="hsd-head">
-            <div>
-              <div className="eyebrow">Sensor Detail</div>
-              <h2 className="hsd-title">{selectedSensor.name}</h2>
-              <div className="hsd-fullname mono">{selectedSensor.name} · {primaryRoomName}</div>
-            </div>
-            <div className="hsd-head-right">
-              <div className="live-pill"><span className="live-dot" />LIVE</div>
-              <button className="icon-btn" onClick={() => setSelectedSensor(null)} title="Close">
-                <IconClose />
-              </button>
-            </div>
-          </div>
-          <div className="hsd-body">
-            <div className="hsd-reading">
-              <div className="hsd-value">
-                <span className="n">{getLiveSensor(selectedSensor.id)?.value || selectedSensor.value}</span>
-                <span className="u">{selectedSensor.unit}</span>
-              </div>
-              <div className="reading-stats">
-                <div className="reading-stat">
-                  <div className="l">24h Avg</div>
-                  <div className="v">38.6</div>
-                </div>
-                <div className="reading-stat">
-                  <div className="l">Peak today</div>
-                  <div className="v">61.2</div>
-                </div>
-                <div className="reading-stat">
-                  <div className="l">Variance</div>
-                  <div className="v">±8.4</div>
-                </div>
-              </div>
-            </div>
-            <div className="hsd-edu">
-              <div className="edu-eyebrow">What is {selectedSensor.name}</div>
-              <div className="edu-desc">{selectedSensor.description || 'Real-time sensor data for monitoring air quality.'}</div>
-            </div>
-          </div>
-          <div className="hsd-foot">
-            <span className="mono" style={{ fontSize: '11px', color: 'var(--text-3)' }}>Updated {lastSyncText} · {primaryRoomName}</span>
-          </div>
-        </div>
-      )}
+      {/* HOME SENSOR DETAIL PANEL (expandable) */}
+      {selectedSensor && <HomeSensorDetail sensor={selectedSensor} onClose={() => setSelectedSensor(null)} />}
 
       {/* DASH GRID: AQI HERO + DEVICE PANEL */}
       <div className="dash-grid">
-        <div className="card aqi-hero">
-          <div className="aqi-head">
-            <div className="lbl">
-              <div className="eyebrow">Whole-home AQI</div>
-              <div className="name">
-                {primaryRoomName}
-                <button className="rename-btn" onClick={() => openRenameDevice('living-room')} title="Rename">
-                  <IconEdit />
-                </button>
-              </div>
-              <div className="meta-row">
-                <span>AERVA Home · SN H487</span>
-              </div>
-            </div>
-            <div className="live-pill">
-              <span className="live-dot" />
-              LIVE
-            </div>
-          </div>
+        <AQIHeroCard heroAqi={heroAqi} live={live} primary={primary} openRenameDevice={openRenameDevice} />
+        <DevicePanel devices={devices} navigate={navigate} openAddDevice={openAddDevice} openRenameDevice={openRenameDevice} />
+      </div>
 
-          <div className="gauge-row">
-            <AQIGauge value={heroAqi} />
-            <div className="aqi-breakdown">
-              <div className="bd-row">
-                <span className="k">CO₂</span>
-                <div className="bd-bar">
-                  <div className="fill" style={{ width: `${Math.min((live?.readings.co2 ?? 400) / 2000 * 100, 100)}%` }} />
-                </div>
-                <span className="v">{live?.readings.co2 ?? '—'}<span className="u">ppm</span></span>
-              </div>
-              <div className="bd-row">
-                <span className="k">PM2.5</span>
-                <div className="bd-bar">
-                  <div className="fill" style={{ width: `${Math.min((live?.readings.pm25 ?? 20) / 100 * 100, 100)}%` }} />
-                </div>
-                <span className="v">{live?.readings.pm25 ?? '—'}<span className="u">μg/m³</span></span>
-              </div>
-              <div className="bd-row">
-                <span className="k">Device</span>
-                <div style={{ flex: 1 }} />
-                <span className="v">{live?.mac ? live.mac.slice(-6) : 'EDA3C'}</span>
-              </div>
-              <Link to="/devices/living-room" className="gauge-cta">
-                Detail <IconChevron />
-              </Link>
-            </div>
+      {/* ANALYTICS ROW: Chart + AI Insights */}
+      <div className="analytics-row">
+        <ChartCard chartData={chartData} primaryRoomName={primaryRoomName} lastSyncText={lastSyncText} />
+        <AICard />
+      </div>
+    </>
+  );
+}
+
+function AQIHeroCard({ heroAqi, live, primary, openRenameDevice }) {
+  const co2 = live?.readings?.co2 ?? 400;
+  const pm25 = live?.readings?.pm25 ?? 20;
+  const mac = live?.mac ?? 'EDA3C';
+
+  return (
+    <div className="card aqi-hero">
+      <div className="aqi-head">
+        <div className="lbl">
+          <div className="eyebrow" style={{color:'var(--aerva-yellow-deep)'}}>Whole-home AQI</div>
+          <div className="name" style={{fontFamily:'var(--font-display)',fontSize:'22px',fontWeight:'600',color:'var(--text-1)',display:'flex',alignItems:'center',gap:'8px'}}>
+            {primary?.name || 'Living Room'}
+            <button className="rename-btn" onClick={() => openRenameDevice('living-room')} title="Rename" style={{width:'28px',height:'28px',borderRadius:'6px',display:'grid',placeItems:'center',color:'var(--text-3)',transition:'all 0.18s',opacity:1,background:'transparent'}}>
+              <IconEdit/>
+            </button>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:'10px',fontFamily:'var(--font-mono)',fontSize:'11px',color:'var(--text-3)'}}>
+            <span>AERVA Home · SN H487</span>
           </div>
         </div>
+        <div className="live-pill" style={{display:'flex',alignItems:'center',gap:'6px'}}>
+          <span className="live-dot" style={{width:'6px',height:'6px',borderRadius:'50%',background:'var(--green)',animation:'blink 1.6s ease-in-out infinite'}}/>
+          LIVE
+        </div>
+      </div>
 
-        <div className="card device-panel">
-          <div className="panel-head">
-            <div>
-              <div className="panel-title">Your devices</div>
+      <div className="gauge-row">
+        <AQIGauge value={heroAqi} />
+        <div className="aqi-breakdown">
+          <div className="bd-row">
+            <span className="k">CO₂</span>
+            <div className="bd-bar">
+              <div className="fill" style={{ width: `${Math.min(co2 / 2000 * 100, 100)}%` }} />
             </div>
+            <span className="v">{co2}<span className="u">ppm</span></span>
           </div>
+          <div className="bd-row">
+            <span className="k">PM2.5</span>
+            <div className="bd-bar">
+              <div className="fill" style={{ width: `${Math.min(pm25 / 100 * 100, 100)}%` }} />
+            </div>
+            <span className="v">{pm25}<span className="u">μg/m³</span></span>
+          </div>
+          <div className="bd-row">
+            <span className="k">Device</span>
+            <div style={{ flex: 1 }} />
+            <span className="v">{mac.slice(-6)}</span>
+          </div>
+          <Link to="/devices/living-room" className="gauge-cta" style={{display:'inline-flex',alignItems:'center',gap:'6px',marginTop:'14px',padding:'9px 16px',background:'var(--aerva-blue)',color:'#fff',borderRadius:'10px',fontSize:'13px',fontWeight:'600',textDecoration:'none',alignSelf:'flex-start',transition:'background 0.18s, transform 0.18s'}}>
+            Detail <IconChevron style={{width:'15px',height:'15px'}}/>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-          <button className="add-device-btn" onClick={openAddDevice}>
-            <IconPlus /> Add Device
+function DevicePanel({ devices, navigate, openAddDevice, openRenameDevice }) {
+  return (
+    <div className="card device-panel">
+      <div className="panel-head">
+        <div style={{fontFamily:'var(--font-display)',fontSize:'18px',fontWeight:'600',color:'var(--text-1)'}}>Your devices</div>
+      </div>
+
+      <button className="add-device-btn" onClick={openAddDevice} style={{width:'100%',padding:'14px',border:'1.5px dashed var(--border-strong)',borderRadius:'12px',color:'var(--text-2)',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontSize:'13px',fontWeight:'500',transition:'all 0.18s',marginTop:'10px',background:'transparent',minHeight:'50px'}}>
+        <IconPlus style={{width:'16px',height:'16px'}}/>
+        Add Device
+      </button>
+
+      <div className="device-list">
+        {devices.map(d => (
+          <div key={d.id} className="device-row" onClick={() => navigate(`/devices/${d.id}`)} style={{display:'grid',gridTemplateColumns:'auto 1fr auto auto',gap:'14px',alignItems:'center',padding:'14px',borderRadius:'12px',border:'1px solid var(--border-soft)',background:'var(--surface-2)',cursor:'pointer',transition:'all 0.2s',minHeight:'60px'}}>
+            <div className={`status-dot ${d.status === 'good' ? '' : d.status === 'warn' ? 'warn' : 'off'}`} style={{width:'8px',height:'8px',borderRadius:'50%',background:d.status==='off'?'var(--text-mute)':d.status==='warn'?'var(--aerva-yellow)':'var(--green)',position:'relative'}} />
+            <div className="device-info">
+              <div className="device-name" style={{fontSize:'13.5px',fontWeight:'600',color:'var(--text-1)',display:'flex',alignItems:'center',gap:'6px'}}>
+                <RoomIcon room={d.room} style={{width:'14px',height:'14px',color:'var(--text-3)',flexShrink:0}}/>
+                {d.name}
+              </div>
+              <div className="device-loc" style={{fontFamily:'var(--font-mono)',fontSize:'10.5px',color:'var(--text-3)',marginTop:'2px'}}>{d.sn}</div>
+            </div>
+            <div className="device-aqi" style={{fontFamily:'var(--font-mono)',fontSize:'15px',fontWeight:'600',color:'var(--text-1)',textAlign:'right',lineHeight:'1.1'}}>
+              {d.aqi}<small style={{fontSize:'9px',color:'var(--text-3)',display:'block',letterSpacing:'1px',marginTop:'2px',fontWeight:'400'}}>AQI</small>
+            </div>
+            <button className="device-action" onClick={(e) => { e.stopPropagation(); openRenameDevice(d.id); }} title="Rename" style={{width:'32px',height:'32px',borderRadius:'8px',display:'grid',placeItems:'center',color:'var(--text-3)',transition:'all 0.15s',background:'transparent'}}>
+              <IconEdit style={{width:'14px',height:'14px'}}/>
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HomeSensorDetail({ sensor, onClose }) {
+  const { getLiveSensor, primaryRoomName } = useApp();
+  const live = getLiveSensor(sensor.id);
+  const value = live ? live.value : sensor.value;
+  const lastSyncText = 'just now';
+
+  return (
+    <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--radius-lg)',boxShadow:'var(--shadow)',padding:'24px',marginBottom:'20px',animation:'fadeIn 0.3s ease'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'20px'}}>
+        <div>
+          <div style={{fontFamily:'var(--font-mono)',fontSize:'10.5px',letterSpacing:'2px',textTransform:'uppercase',color:'var(--text-3)',fontWeight:'500'}}>Sensor Detail</div>
+          <h2 style={{fontFamily:'var(--font-display)',fontSize:'24px',fontWeight:'600',color:'var(--text-1)',marginTop:'4px'}}>{sensor.name}</h2>
+          <div style={{fontFamily:'var(--font-mono)',fontSize:'11px',color:'var(--text-3)',marginTop:'4px'}}>{sensor.name} · {primaryRoomName}</div>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+          <div className="live-pill" style={{display:'flex',alignItems:'center',gap:'6px',fontFamily:'var(--font-mono)',fontSize:'10.5px',letterSpacing:'1.2px',textTransform:'uppercase',color:'var(--green)',padding:'5px 10px',background:'var(--green-soft)',borderRadius:'20px'}}>
+            <span style={{width:'6px',height:'6px',borderRadius:'50%',background:'var(--green)',animation:'blink 1.6s ease-in-out infinite'}}/>
+            LIVE
+          </div>
+          <button className="icon-btn" onClick={onClose} title="Close" style={{width:'40px',height:'40px',borderRadius:'10px',display:'grid',placeItems:'center',color:'var(--text-2)',transition:'all 0.18s',background:'transparent'}}>
+            <IconClose style={{width:'17px',height:'17px'}}/>
           </button>
-
-          <div className="device-list">
-            {devices.map(d => (
-              <div key={d.id} className="device-row" onClick={() => navigate(`/devices/${d.id}`)}>
-                <div className={`status-dot ${d.status === 'good' ? '' : d.status === 'warn' ? 'warn' : 'off'}`} />
-                <div className="device-info">
-                  <div className="device-name">
-                    <RoomIcon room={d.room} className="room-icon" />
-                    {d.name}
-                  </div>
-                  <div className="device-loc">{d.sn}</div>
-                </div>
-                <div className="device-aqi">{d.aqi}<small>AQI</small></div>
-                <button className="device-action" onClick={(e) => { e.stopPropagation(); openRenameDevice(d.id); }} title="Rename">
-                  <IconEdit />
-                </button>
+        </div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'24px'}}>
+        <div>
+          <div style={{display:'flex',alignItems:'baseline',gap:'12px'}}>
+            <div style={{fontFamily:'var(--font-display)',fontSize:'60px',fontWeight:'500',color:'var(--text-1)',lineHeight:'1',letterSpacing:'-0.5px'}}>{value}</div>
+            <div style={{fontFamily:'var(--font-mono)',fontSize:'13px',color:'var(--text-3)',letterSpacing:'1px'}}>{sensor.unit}</div>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3, 1fr)',gap:'12px',paddingTop:'16px',borderTop:'1px solid var(--border-soft)',marginTop:'16px'}}>
+            {[
+              {label:'24h Avg',value:'38.6'},
+              {label:'Peak today',value:'61.2'},
+              {label:'Variance',value:'±8.4'}
+            ].map((s,i)=>(
+              <div key={i}>
+                <div style={{fontFamily:'var(--font-mono)',fontSize:'9.5px',letterSpacing:'1.2px',textTransform:'uppercase',color:'var(--text-3)',marginBottom:'4px',fontWeight:'600'}}>{s.label}</div>
+                <div style={{fontFamily:'var(--font-mono)',fontSize:'16px',fontWeight:'600',color:'var(--text-1)'}}>{s.value}</div>
               </div>
             ))}
           </div>
         </div>
-      </div>
-
-      {/* ANALYTICS */}
-      <div className="analytics-row">
-        <div className="card chart-card">
-          <div className="chart-head">
-            <div className="chart-title-block">
-              <div className="chart-title">PM2.5 trend</div>
-              <div className="chart-sub">Last 24 hours · {primaryRoomName}</div>
-            </div>
-            <div className="timeframe">
-              <button className="tf-btn">1H</button>
-              <button className="tf-btn active">24H</button>
-              <button className="tf-btn">7D</button>
-            </div>
-          </div>
-          <div className="chart-canvas-wrap">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#EFBE1D" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="#EFBE1D" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="#EEF2F7" vertical={false} />
-                <XAxis dataKey="time" stroke="#A8B5C8" tick={{ fontSize: 11, fontFamily: 'JetBrains Mono' }} interval={3} />
-                <YAxis stroke="#A8B5C8" tick={{ fontSize: 11, fontFamily: 'JetBrains Mono' }} />
-                <Tooltip
-                  contentStyle={{ background: '#fff', border: '1px solid #E5EAF1', borderRadius: 8, fontSize: 12 }}
-                  labelStyle={{ color: '#4A5A72', fontFamily: 'JetBrains Mono' }}
-                />
-                <Area type="monotone" dataKey="value" stroke="#EFBE1D" strokeWidth={2} fill="url(#g1)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="card ai-card">
-          <div className="ai-head">
-            <div className="ai-icon">
-              <IconSparkle />
-            </div>
-            <div>
-              <div className="chart-title">AI Insights</div>
-              <div className="chart-sub">This week</div>
-            </div>
-          </div>
-          <div className="ai-insight">
-            <div className="title">🍳 Kitchen spike at 7 PM</div>
-            <div className="body">PM2.5 rises during dinner prep. Run exhaust fan before and after cooking.</div>
-            <div className="action">Learn more</div>
-          </div>
-          <div className="ai-insight green">
-            <div className="title">✓ CO₂ levels stable</div>
-            <div className="body">Average CO₂ across all rooms is well below unhealthy levels.</div>
-          </div>
+        <div style={{paddingLeft:'20px',borderLeft:'1px solid var(--border-soft)'}}>
+          <div style={{fontFamily:'var(--font-mono)',fontSize:'10.5px',letterSpacing:'1.8px',textTransform:'uppercase',color:'var(--aerva-yellow-deep)',fontWeight:'600',marginBottom:'6px'}}>What is {sensor.name}</div>
+          <div style={{fontSize:'13px',color:'var(--text-2)',lineHeight:'1.65'}}>{sensor.description || 'Real-time sensor data for monitoring air quality.'}</div>
         </div>
       </div>
-    </>
+      <div style={{marginTop:'20px',paddingTop:'16px',borderTop:'1px solid var(--border-soft)',display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:'11px',fontFamily:'var(--font-mono)',color:'var(--text-3)'}}>
+        Updated {lastSyncText} · {primaryRoomName}
+      </div>
+    </div>
+  );
+}
+
+function ChartCard({ chartData, primaryRoomName, lastSyncText }) {
+  const [timeframe, setTimeframe] = useState('24h');
+
+  return (
+    <div className="card chart-card">
+      <div className="chart-head">
+        <div className="chart-title-block">
+          <div className="chart-title">PM2.5 trend</div>
+          <div className="chart-sub">Last 24 hours · {primaryRoomName}</div>
+        </div>
+        <div className="timeframe" style={{display:'flex',gap:'2px',background:'var(--surface-2)',padding:'3px',borderRadius:'10px',border:'1px solid var(--border)'}}>
+          {['1H','24H','7D'].map(tf=>(
+            <button key={tf} className={`tf-btn ${timeframe===tf?'active':''}`} onClick={()=>setTimeframe(tf)} style={{padding:'6px 12px',borderRadius:'8px',fontFamily:'var(--font-mono)',fontSize:'11px',fontWeight:'600',letterSpacing:'0.5px',color:timeframe===tf?'#fff':'var(--text-3)',background:timeframe===tf?'var(--aerva-blue)':'transparent',transition:'all 0.18s'}}>
+              {tf}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="chart-canvas-wrap">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#EFBE1D" stopOpacity={0.45} />
+                <stop offset="100%" stopColor="#EFBE1D" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid stroke="#EEF2F7" vertical={false} />
+            <XAxis dataKey="time" stroke="#A8B5C8" tick={{ fontSize: 11, fontFamily: 'JetBrains Mono' }} interval={3} />
+            <YAxis stroke="#A8B5C8" tick={{ fontSize: 11, fontFamily: 'JetBrains Mono' }} />
+            <Tooltip
+              contentStyle={{ background: '#fff', border: '1px solid #E5EAF1', borderRadius: 8, fontSize: 12 }}
+              labelStyle={{ color: '#4A5A72', fontFamily: 'JetBrains Mono' }}
+            />
+            <Area type="monotone" dataKey="value" stroke="#EFBE1D" strokeWidth={2} fill="url(#g1)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+function AICard() {
+  return (
+    <div className="card ai-card">
+      <div className="ai-head" style={{display:'flex',alignItems:'center',gap:'10px'}}>
+        <div className="ai-icon" style={{width:'32px',height:'32px',borderRadius:'9px',background:'linear-gradient(135deg, #FFF4D0, #FFFCEF)',border:'1px solid var(--aerva-yellow)',display:'grid',placeItems:'center',color:'var(--aerva-yellow-deep)'}}>
+          <IconSparkle style={{width:'16px',height:'16px'}}/>
+        </div>
+        <div>
+          <div className="chart-title" style={{fontSize:'16px'}}>AI Insights</div>
+          <div className="chart-sub" style={{fontFamily:'var(--font-mono)',fontSize:'11px',color:'var(--text-3)'}}>This week</div>
+        </div>
+      </div>
+      <div style={{padding:'14px',borderRadius:'12px',background:'var(--surface-2)',border:'1px solid var(--border-soft)',borderLeft:'3px solid var(--aerva-yellow)'}}>
+        <div style={{fontSize:'13px',fontWeight:'600',color:'var(--text-1)',marginBottom:'4px'}}>🍳 Kitchen spike at 7 PM</div>
+        <div style={{fontSize:'12px',color:'var(--text-2)',lineHeight:'1.55'}}>PM2.5 rises during dinner prep. Run exhaust fan before and after cooking.</div>
+        <div style={{marginTop:'8px',fontFamily:'var(--font-mono)',fontSize:'10.5px',color:'var(--aerva-yellow-deep)',letterSpacing:'1px',textTransform:'uppercase',fontWeight:'600',cursor:'pointer'}}>Learn more</div>
+      </div>
+      <div style={{padding:'14px',borderRadius:'12px',background:'var(--green-soft)',border:'1px solid var(--green-soft)',borderLeft:'3px solid var(--green)'}}>
+        <div style={{fontSize:'13px',fontWeight:'600',color:'var(--text-1)',marginBottom:'4px'}}>✓ CO₂ levels stable</div>
+        <div style={{fontSize:'12px',color:'var(--text-2)',lineHeight:'1.55'}}>Average CO₂ across all rooms is well below unhealthy levels.</div>
+        <div style={{marginTop:'8px',fontFamily:'var(--font-mono)',fontSize:'10.5px',color:'var(--green)',letterSpacing:'1px',textTransform:'uppercase',fontWeight:'600',cursor:'pointer'}}>Learn more</div>
+      </div>
+    </div>
   );
 }
