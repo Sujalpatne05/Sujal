@@ -1,0 +1,104 @@
+================================================================================
+                     AERVA DEPLOYMENT SETUP COMPLETE
+================================================================================
+
+✓ FRONTEND (React PWA) - Ready for Netlify
+  - Build output: aerva-react/dist/
+  - Build command: npm run build
+  - Config file: aerva-react/netlify.toml
+  - Auto-redirects all routes to index.html (SPA routing)
+
+✓ BACKEND (Node.js MQTT Broker) - Ready for Render
+  - Entry point: mqtt-broker.js
+  - Config file: render.yaml
+  - Runs on: PORT 10000 (WebSocket)
+  - Listens on: /mqtt endpoint
+
+✓ SMART BROKER DETECTION
+  - mqttClient.js auto-detects environment:
+    * Local dev → ws://localhost:9001
+    * Production → wss://aerva-mqtt-broker.onrender.com
+    * Fallback → HiveMQ public broker
+
+================================================================================
+                          QUICK START - NETLIFY
+================================================================================
+
+1. Go to https://netlify.com
+2. Click "New site from Git"
+3. Select repository: Sujalpatne05/Areva
+4. Configure:
+   - Base directory: aerva-react
+   - Build command: npm run build
+   - Publish directory: dist
+5. Click "Deploy"
+
+Expected: App deploys automatically on every push to main
+
+================================================================================
+                           QUICK START - RENDER
+================================================================================
+
+1. Go to https://render.com
+2. Click "New +" → "Web Service"
+3. Connect GitHub repo: Sujalpatne05/Areva
+4. Render auto-detects render.yaml configuration
+5. Select plan: Free
+6. Click "Deploy"
+
+Expected: MQTT broker starts and listens on wss://aerva-mqtt-broker.onrender.com
+
+================================================================================
+                        AFTER BOTH ARE DEPLOYED
+================================================================================
+
+Frontend URL (from Netlify):  https://[your-netlify-site].netlify.app
+Backend URL (from Render):     wss://aerva-mqtt-broker.onrender.com
+
+1. Visit Netlify URL
+2. Dashboard loads with beautiful UI
+3. Connection status shows "Connected" (if backend is running)
+4. All sensor data flows through MQTT WebSocket
+
+================================================================================
+                              LOCAL TESTING
+================================================================================
+
+Terminal 1: Frontend Dev Server
+  cd aerva-react
+  npm run dev
+  → http://localhost:5173
+
+Terminal 2: Backend MQTT Broker
+  node mqtt-broker.js
+  → ws://localhost:9001
+
+Both auto-connect and work together locally before deploying!
+
+================================================================================
+                           WHAT WAS CONFIGURED
+================================================================================
+
+Files Created:
+  ✓ render.yaml                    - Render deployment config
+  ✓ aerva-react/netlify.toml       - Netlify deployment config
+  ✓ aerva-react/.env.production    - Production environment variables
+  ✓ aerva-react/.env.example       - Example template
+  ✓ DEPLOYMENT.md                  - Detailed deployment guide
+  ✓ mqtt-broker.js (updated)       - Environment-aware port configuration
+  ✓ mqttClient.js (updated)        - Smart broker URL detection
+
+All changes pushed to GitHub main branch ✓
+
+================================================================================
+                              NEXT STEPS
+================================================================================
+
+1. Deploy backend on Render (5 min)
+2. Deploy frontend on Netlify (5 min)
+3. Test live sensor data flow (optional - need ESP32 device)
+4. Monitor Render logs for client connections
+5. Scale if needed (upgrade Render plan for continuous uptime)
+
+Questions? See DEPLOYMENT.md for detailed troubleshooting & monitoring.
+================================================================================
