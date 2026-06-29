@@ -4,16 +4,9 @@ const { createServer: createHttpServer } = require('http');
 const WebSocketServer = require('ws').Server;
 
 const PORT = process.env.PORT || 10000;
-const WS_PORT = process.env.WS_PORT || PORT;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// TCP Server (Port 1883 in dev, WS_PORT in prod) - for ESP32 devices
-const tcpServer = createServer(aedes.handle);
-tcpServer.listen(NODE_ENV === 'production' ? WS_PORT : 1883, () => {
-  console.log(`MQTT TCP broker listening on port ${NODE_ENV === 'production' ? WS_PORT : 1883}`);
-});
-
-// WebSocket Server - for web apps
+// WebSocket Server only - for web apps (Render uses single port)
 const httpServer = createHttpServer();
 const wss = new WebSocketServer({ 
   server: httpServer,
@@ -28,8 +21,8 @@ wss.on('connection', (ws) => {
   aedes.handle(duplex);
 });
 
-httpServer.listen(WS_PORT, () => {
-  console.log(`MQTT WebSocket broker listening on ws://0.0.0.0:${WS_PORT}`);
+httpServer.listen(PORT, () => {
+  console.log(`MQTT WebSocket broker listening on ws://0.0.0.0:${PORT}`);
 });
 
 // Aedes events
@@ -57,7 +50,6 @@ process.on('SIGINT', () => {
 });
 
 console.log('\n=== AERVA MQTT Broker Running ===');
-console.log('TCP (ESP32):    mqtt://localhost:1883');
-console.log('WebSocket:      ws://localhost:9001');
+console.log(`WebSocket:      ws://0.0.0.0:${PORT}`);
 console.log('Default user:   aerva_zeptac');
 console.log('==================================\n');
