@@ -2,6 +2,7 @@ const aedes = require('aedes')();
 const { createServer } = require('net');
 const { createServer: createHttpServer } = require('http');
 const WebSocketServer = require('ws').Server;
+const { Duplex } = require('stream');
 
 const PORT = process.env.PORT || 10000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -24,10 +25,26 @@ const wss = new WebSocketServer({
 });
 
 wss.on('connection', (ws) => {
-  const duplex = require('stream').Duplex.from([
-    ws,
-    ws,
-  ]);
+  // Wrap WebSocket as a Duplex stream
+  const duplex = new Duplex({
+    read() {},
+    write(chunk, encoding, callback) {
+      ws.send(chunk, callback);
+    }
+  });
+
+  ws.on('message', (chunk) => {
+    duplex.push(chunk);
+  });
+
+  ws.on('close', () => {
+    duplex.push(null);
+  });
+
+  ws.on('error', (err) => {
+    duplex.destroy(err);
+  });
+
   aedes.handle(duplex);
 });
 
