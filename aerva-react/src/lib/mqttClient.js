@@ -6,11 +6,8 @@ const CONFIG_KEY = 'aerva_mqtt_config';
 
 export const DEFAULT_CONFIG = {
   // Browsers can ONLY do MQTT over WebSocket. Raw TCP 1883 will not work.
-  // Point this at your broker's WebSocket listener, e.g.:
-  //   ws://aerva.zeptac.com:9001/mqtt   (plain, dev only)
-  //   wss://aerva.zeptac.com:443/mqtt   (TLS, required for installed PWA / https sites)
-  url: 'wss://aerva.zeptac.com:443/mqtt',
-  username: 'aerva_zeptac',
+  url: 'wss://sujal-uqj2.onrender.com',
+  username: '',
   password: '',
   mac: 'EC64C96EDA3C',
   // Topic templates — {MAC} is substituted at connect time.
