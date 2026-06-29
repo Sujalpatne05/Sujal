@@ -1,7 +1,4 @@
 {
-  "buildCommand": "npm ci && npm run build",
-  "outputDirectory": "dist",
-  "env": {
-    "npm_config_legacy_peer_deps": "true"
-  }
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }
