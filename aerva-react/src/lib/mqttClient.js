@@ -4,13 +4,29 @@ import { parseDevicePayload } from './aqi.js';
 // ---- Persisted connection config (localStorage) ----
 const CONFIG_KEY = 'aerva_mqtt_config';
 
+// Support for custom broker URL via environment variable or fallback to HiveMQ
+const getBrokerUrl = () => {
+  // Check for explicit environment variable
+  if (import.meta.env.VITE_MQTT_URL) {
+    return import.meta.env.VITE_MQTT_URL;
+  }
+  // If running on a Netlify domain and have Render backend, use it
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    // Production Render broker
+    return 'wss://aerva-mqtt-broker.onrender.com';
+  }
+  // Local development
+  if (window.location.hostname === 'localhost') {
+    return 'ws://localhost:9001';
+  }
+  // Fallback: HiveMQ public broker for testing
+  return 'wss://broker.hivemq.com:8884/mqtt';
+};
+
 export const DEFAULT_CONFIG = {
   // Browsers can ONLY do MQTT over WebSocket. Raw TCP 1883 will not work.
-  // Point this at your broker's WebSocket listener, e.g.:
-  //   ws://aerva.zeptac.com:9001/mqtt   (plain, dev only)
-  //   wss://aerva.zeptac.com:443/mqtt   (TLS, required for installed PWA / https sites)
-  url: 'wss://aerva.zeptac.com:443/mqtt',
-  username: 'aerva_zeptac',
+  url: getBrokerUrl(),
+  username: '',
   password: '',
   mac: 'EC64C96EDA3C',
   // Topic templates — {MAC} is substituted at connect time.

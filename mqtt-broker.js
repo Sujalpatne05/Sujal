@@ -3,15 +3,22 @@ const { createServer } = require('net');
 const { createServer: createHttpServer } = require('http');
 const WebSocketServer = require('ws').Server;
 
-// TCP Server (Port 1883) - for ESP32 devices
+const PORT = process.env.PORT || 10000;
+const WS_PORT = process.env.WS_PORT || PORT;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+// TCP Server (Port 1883 in dev, WS_PORT in prod) - for ESP32 devices
 const tcpServer = createServer(aedes.handle);
-tcpServer.listen(1883, () => {
-  console.log('MQTT TCP broker listening on port 1883');
+tcpServer.listen(NODE_ENV === 'production' ? WS_PORT : 1883, () => {
+  console.log(`MQTT TCP broker listening on port ${NODE_ENV === 'production' ? WS_PORT : 1883}`);
 });
 
-// WebSocket Server (Port 9001) - for web apps
+// WebSocket Server - for web apps
 const httpServer = createHttpServer();
-const wss = new WebSocketServer({ server: httpServer });
+const wss = new WebSocketServer({ 
+  server: httpServer,
+  perMessageDeflate: false
+});
 
 wss.on('connection', (ws) => {
   const duplex = require('stream').Duplex.from([
@@ -21,8 +28,9 @@ wss.on('connection', (ws) => {
   aedes.handle(duplex);
 });
 
-httpServer.listen(9001, () => {
-  console.log('MQTT WebSocket broker listening on ws://localhost:9001');
+httpServer.listen(WS_PORT, () => {
+  console.log(`MQTT WebSocket broker listening on ws://0.0.0.0:${WS_PORT}`);
+});
 });
 
 // Aedes events

@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[context.production.environment]
+  VITE_API_URL = "https://aerva-broker.onrender.com"
+
+[context.deploy-preview.environment]
+  VITE_API_URL = "https://aerva-broker.onrender.com"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
