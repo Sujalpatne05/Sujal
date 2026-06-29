@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "cd aerva-react && npm run build",
+  "outputDirectory": "aerva-react/dist",
   "env": {
     "VITE_MQTT_URL": "wss://sujal-uqj2.onrender.com"
   }
