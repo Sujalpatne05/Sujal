@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: aerva-frontend
+    env: node
+    region: ohio
+    plan: free
+    buildCommand: cd aerva-react && npm install && npm run build
+    startCommand: cd aerva-react && npm run preview -- --host 0.0.0.0
+    envVars:
+      - key: NODE_ENV
+        value: production
