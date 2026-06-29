@@ -7,8 +7,8 @@ import DeviceDetail from './pages/DeviceDetail.jsx';
 import Settings from './pages/Settings.jsx';
 import Reports from './pages/Reports.jsx';
 import Onboarding from './pages/Onboarding.jsx';
+import Alerts from './pages/Alerts.jsx';
 
-// Provide modal openers via context so any page/button can trigger them
 export const ModalContext = React.createContext({
   openAddDevice: () => {},
   openRenameDevice: () => {}
@@ -22,7 +22,6 @@ export default function App() {
   const openAddDevice = useCallback(() => setAddOpen(true), []);
   const openRenameDevice = useCallback((id) => setRenameId(id), []);
 
-  // Hide chrome on the onboarding flow (full-bleed)
   const isOnboarding = pathname.startsWith('/onboarding');
 
   return (
@@ -34,6 +33,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/devices/:deviceId" element={<DeviceDetail />} />
+            <Route path="/alerts" element={<Alerts />} />
             <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
             <Route path="/settings/:section" element={<Settings />} />
             <Route path="/reports" element={<Reports />} />

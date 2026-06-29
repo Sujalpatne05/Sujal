@@ -2783,3 +2783,154 @@ a { color: inherit; text-decoration: none; }
   .conn-actions { flex-direction: column; }
   .conn-actions .btn { width: 100%; justify-content: center; }
 }
+
+/* ===== SECTION HEAD (dashboard sensor section label) ===== */
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 1px;
+}
+.section-sub {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+/* ===== INLINE HOME SENSOR DETAIL (click-to-expand on dashboard) ===== */
+.home-sensor-detail {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.25s ease;
+  overflow: hidden;
+}
+.home-sensor-detail::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(239,190,29,0.04), transparent 50%);
+}
+.hsd-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.hsd-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+  margin: 4px 0 2px;
+}
+.hsd-fullname { font-size: 11.5px; color: var(--text-3); }
+.hsd-head-right { display: flex; align-items: center; gap: 10px; }
+.hsd-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+.hsd-reading {}
+.hsd-value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.hsd-value .n {
+  font-family: var(--font-display);
+  font-size: 64px;
+  font-weight: 500;
+  color: var(--text-1);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.hsd-value .u {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-3);
+  letter-spacing: 1px;
+}
+.hsd-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 10px;
+  align-self: center;
+}
+.hsd-status.good { background: var(--green-soft); color: var(--green); }
+.hsd-status.moderate { background: var(--yellow-soft); color: var(--yellow); }
+.hsd-status.bad { background: var(--red-soft); color: var(--red); }
+.hsd-edu {
+  padding-left: 22px;
+  border-left: 1px solid var(--border-soft);
+}
+.hsd-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* AQI Hero gauge SVG rotation */
+.gauge-wrap svg {
+  transform: rotate(135deg);
+}
+
+/* detail-grid 2-col (reading + chart side by side) */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Device row device-actions cell */
+.device-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Greeting line on dashboard */
+.greeting {
+  display: none; /* only used as sub-text, display:none keeps layout clean */
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .hsd-body { grid-template-columns: 1fr; }
+  .hsd-edu { padding-left: 0; border-left: none; border-top: 1px solid var(--border-soft); padding-top: 16px; }
+  .detail-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .home-sensor-detail { padding: 18px; }
+  .hsd-title { font-size: 22px; }
+  .hsd-value .n { font-size: 48px; }
+  .section-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+}

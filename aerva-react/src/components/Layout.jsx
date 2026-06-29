@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import {
   IconHome, IconDevices, IconAlert, IconPlus, IconFile, IconSettings,
-  IconSearch, IconClose, IconMenu, IconChevron, IconBell
+  IconSearch, IconMenu, IconChevron, IconBell
 } from './icons.jsx';
 
 export function Logo() {
@@ -23,7 +23,6 @@ export function Sidebar() {
   const enabledRules = alertRules.filter(r => r.enabled).length;
 
   const handleClick = () => {
-    // Close drawer on mobile when nav item clicked
     if (window.matchMedia('(max-width: 768px)').matches) {
       toggleDrawer(false);
     }
@@ -50,7 +49,7 @@ export function Sidebar() {
             <IconDevices /> My devices
             <span className="nav-badge success">{devices.length}</span>
           </NavLink>
-          <NavLink to="/settings/alerts" className="nav-item" onClick={handleClick}>
+          <NavLink to="/alerts" className="nav-item" onClick={handleClick}>
             <IconAlert /> Alerts
             <span className="nav-badge">{enabledRules}</span>
           </NavLink>
@@ -84,11 +83,13 @@ export function Sidebar() {
 
 const VIEW_LABELS = {
   '/': 'Home',
+  '/alerts': 'Alerts',
   '/devices': 'Rooms',
   '/reports': 'Reports',
   '/onboarding': 'Add device',
   '/settings': 'Settings',
   '/settings/general': 'Settings · General',
+  '/settings/connection': 'Settings · Connection',
   '/settings/notifications': 'Settings · Notifications',
   '/settings/devices': 'Settings · Devices',
   '/settings/alerts': 'Settings · Alerts',
@@ -99,7 +100,6 @@ export function TopBar() {
   const { toggleDrawer } = useApp();
   const { pathname } = useLocation();
 
-  // Match longest path
   let label = 'AERVA';
   for (const key of Object.keys(VIEW_LABELS).sort((a, b) => b.length - a.length)) {
     if (pathname === key || pathname.startsWith(key + '/')) {
@@ -154,10 +154,10 @@ export function MobileNav() {
           <div className="mnav-fab"><IconPlus /></div>
           <span style={{ marginTop: -6 }}>Add</span>
         </NavLink>
-        <NavLink to="/settings/alerts" className={`mnav-item ${isActive('/settings/alerts') ? 'active' : ''}`}>
+        <NavLink to="/alerts" className={`mnav-item ${isActive('/alerts') ? 'active' : ''}`}>
           <IconAlert /><span>Alerts</span>
         </NavLink>
-        <NavLink to="/settings" end className={`mnav-item ${isActive('/settings', true) ? 'active' : ''}`}>
+        <NavLink to="/settings" className={`mnav-item ${isActive('/settings') ? 'active' : ''}`}>
           <IconSettings /><span>More</span>
         </NavLink>
       </div>
@@ -170,7 +170,6 @@ export function Toast() {
   if (!toast) return null;
   return (
     <div className="toast">
-      <IconClose style={{ display: 'none' }} />
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EFBE1D" strokeWidth="2.4"><polyline points="20 6 9 17 4 12"/></svg>
       <span>{toast}</span>
     </div>

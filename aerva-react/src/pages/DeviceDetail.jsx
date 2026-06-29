@@ -1,26 +1,26 @@
 import React, { useContext } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, CartesianGrid, Tooltip, ReferenceLine } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, CartesianGrid, Tooltip } from 'recharts';
 import { useApp } from '../store.jsx';
 import { ModalContext } from '../App.jsx';
 import { SENSORS, findSensor } from '../data/sensors.js';
 import { SensorIllustration, makeChartData, makeReadings } from '../data/devices.jsx';
-import { IconEdit, IconDownload } from '../components/icons.jsx';
+import { IconEdit, IconDownload, IconSparkle } from '../components/icons.jsx';
 
 function SensorTab({ sensor, active, onClick }) {
   return (
-    <button className={`stab ${active ? 'active' : ''}`} onClick={onClick}>
+    <button className={`stab${active ? ' active' : ''}`} onClick={onClick}>
       <div className="st-head">
         <span className="st-name">{sensor.name}</span>
-        <span className={`st-dot st-dot--${sensor.status}`} />
+        <span className={`st-dot ${sensor.status}`} />
       </div>
       <div className="st-val">
         <span className="v">{sensor.value}</span>
         <span className="u">{sensor.unit}</span>
       </div>
-      <span className={`st-status st-status--${sensor.status}`}>{sensor.statusText}</span>
+      <span className={`st-status ${sensor.status}`}>{sensor.statusText}</span>
       <div className="st-meter">
-        <div className={`st-meter-fill st-meter-fill--${sensor.status}`} style={{ width: `${sensor.meterPct}%` }} />
+        <div className={`fill ${sensor.status}`} style={{ width: `${sensor.meterPct}%` }} />
       </div>
     </button>
   );
@@ -44,7 +44,10 @@ export default function DeviceDetail() {
       {/* Page head */}
       <div className="page-head">
         <div>
-          <div className="eyebrow">Device · AERVA Home · SN {device.sn}</div>
+          <div className="eyebrow-home">
+            <span className="home-dot" />
+            DEVICE · AERVA Home · SN {device.sn}
+          </div>
           <h1 className="display-1">
             {device.name}
             <button className="rename-btn rename-btn--inline" onClick={() => openRenameDevice(device.id)} aria-label="Rename room">
@@ -53,7 +56,7 @@ export default function DeviceDetail() {
           </h1>
           <div className="sub mono">Ground floor · Online · firmware v2.4.1</div>
         </div>
-        <div className="head-actions">
+        <div className="head-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <button className="btn btn-ghost" onClick={() => openRenameDevice(device.id)}>
             <IconEdit /> Rename
           </button>
@@ -61,7 +64,7 @@ export default function DeviceDetail() {
         </div>
       </div>
 
-      {/* Sensor tabs (horizontal-scroll on mobile) */}
+      {/* Sensor tabs */}
       <div className="sensor-tabs-wrap">
         <div className="sensor-tabs">
           {SENSORS.map(s => (
@@ -91,12 +94,17 @@ export default function DeviceDetail() {
       </div>
 
       {/* Reading detail + chart */}
-      <div className="detail-grid-3">
+      <div className="detail-grid">
         <div className="card reading-hero">
           <div className="reading-head">
-            <div>
-              <div className="reading-type">{sensor.type}</div>
-              <div className="reading-name">{sensor.name === 'RH' ? 'Humidity' : sensor.fullName}</div>
+            <div className="who">
+              <div className="reading-icon">
+                <IconSparkle />
+              </div>
+              <div className="reading-name">
+                <div className="t">{sensor.type}</div>
+                <div className="b">{sensor.name === 'RH' ? 'Humidity' : sensor.fullName}</div>
+              </div>
             </div>
             <div className="live-pill"><span className="live-dot" /> LIVE</div>
           </div>
@@ -148,7 +156,7 @@ export default function DeviceDetail() {
                 <XAxis dataKey="time" stroke="#A8B5C8" tick={{ fontSize: 11, fontFamily: 'JetBrains Mono' }} interval={2} />
                 <YAxis stroke="#A8B5C8" tick={{ fontSize: 11, fontFamily: 'JetBrains Mono' }} />
                 <Tooltip
-                  contentStyle={{ background: '#fff', border: '1px solid #E5EAF1', borderRadius: 8, fontSize: 12 }}
+                  contentStyle={{ background: '#0A2E50', border: '1px solid #EFBE1D', borderRadius: 8, fontSize: 11, color: '#fff' }}
                   formatter={(v) => [`${v} ${sensor.unit}`, sensor.name]}
                 />
                 <Area type="monotone" dataKey="value" stroke={chartColor} strokeWidth={2} fill="url(#dgrad)" />
@@ -169,10 +177,12 @@ export default function DeviceDetail() {
         </div>
         <div className="readings-list">
           {readings.map((r, i) => (
-            <div key={i} className="reading-row">
-              <span className="reading-time">{r.t}</span>
-              <span className={`reading-dot reading-dot--${r.s}`} />
-              <span className="reading-val">{r.v} {sensor.unit}</span>
+            <div key={i} className="reading-item">
+              <span className="t">{r.t}</span>
+              <span className="v">
+                <span className={`dot`} style={{ background: r.s === 'yellow' ? 'var(--aerva-yellow)' : 'var(--green)' }} />
+                {r.v} {sensor.unit}
+              </span>
             </div>
           ))}
         </div>
