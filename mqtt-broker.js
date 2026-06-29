@@ -31,7 +31,6 @@ wss.on('connection', (ws) => {
 httpServer.listen(WS_PORT, () => {
   console.log(`MQTT WebSocket broker listening on ws://0.0.0.0:${WS_PORT}`);
 });
-});
 
 // Aedes events
 aedes.on('client:connected', (client) => {
