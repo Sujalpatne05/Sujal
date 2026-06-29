@@ -1,0 +1,14 @@
+{
+  "name": "aerva-mqtt-broker",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "AERVA MQTT Broker",
+  "main": "mqtt-broker.js",
+  "scripts": {
+    "start": "node mqtt-broker.js"
+  },
+  "dependencies": {
+    "aedes": "^0.48.0",
+    "ws": "^8.13.0"
+  }
+}

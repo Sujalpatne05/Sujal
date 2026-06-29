@@ -1,0 +1,127 @@
+// Sensor definitions: value, thresholds, descriptions, educational copy
+export const SENSORS = [
+  {
+    id: 'aqi',
+    name: 'AQI',
+    fullName: 'Air Quality Index',
+    type: 'Composite',
+    value: 68,
+    unit: '',
+    status: 'moderate',
+    statusText: 'Moderate',
+    meterPct: 34,
+    avg24: 62, peak: 87, variance: 9,
+    thresholds: ['SAFE 0–50', 'MODERATE 51–100', 'POOR 101–300'],
+    markerPos: 34,
+    description: 'The Air Quality Index combines several pollutant readings — PM2.5, PM10, CO, NO₂, SO₂, O₃ — into one number from 0 to 500. Lower is better. Values above 100 mean sensitive groups should reduce outdoor activity; above 150 affects everyone.',
+    bullets: ['Optimal: 0–50', 'Reference: CPCB / WHO']
+  },
+  {
+    id: 'pm25',
+    name: 'PM2.5',
+    fullName: 'Fine Particulate Matter',
+    type: 'Particulate',
+    value: 42,
+    unit: 'μg/m³',
+    status: 'moderate',
+    statusText: 'Moderate',
+    meterPct: 56,
+    avg24: 38.6, peak: 61.2, variance: 8.4,
+    thresholds: ['SAFE 0–35', 'MODERATE 35–75', 'UNSAFE 75+'],
+    markerPos: 42,
+    description: 'PM2.5 refers to particles smaller than 2.5 micrometers — small enough to enter your lungs and bloodstream. Common indoor sources are cooking, candles, incense, mosquito coils, and outdoor air leaking in. Long-term exposure is linked to asthma, heart disease, and reduced lung function.',
+    bullets: ['WHO limit: 15 μg/m³', 'Source: cooking, traffic']
+  },
+  {
+    id: 'co2',
+    name: 'CO₂',
+    fullName: 'Carbon Dioxide',
+    type: 'Gas',
+    value: 847,
+    unit: 'ppm',
+    status: 'good',
+    statusText: 'Good',
+    meterPct: 42,
+    avg24: 798, peak: 912, variance: 64,
+    thresholds: ['GOOD 0–1000', 'POOR 1000–2000', 'BAD 2000+'],
+    markerPos: 42,
+    description: 'Carbon Dioxide is produced by breathing and combustion. It is harmless in small quantities, but builds up in poorly ventilated rooms — making people drowsy, reducing concentration, and impacting sleep quality. Levels above 1000 ppm indicate the room needs more fresh air.',
+    bullets: ['Optimal: below 1000 ppm', 'Tip: open a window']
+  },
+  {
+    id: 'co',
+    name: 'CO',
+    fullName: 'Carbon Monoxide',
+    type: 'Gas',
+    value: 1.4,
+    unit: 'ppm',
+    status: 'good',
+    statusText: 'Good',
+    meterPct: 16,
+    avg24: 1.2, peak: 2.1, variance: 0.3,
+    thresholds: ['SAFE 0–9', 'WARNING 9–35', 'DANGER 35+'],
+    markerPos: 16,
+    description: 'Carbon Monoxide is a colorless, odorless gas produced by incomplete combustion — gas stoves, geysers, candles, and indoor smoking. Even at low levels, prolonged exposure causes headaches, dizziness, and impaired cognition. High levels are life-threatening.',
+    bullets: ['Safe: below 9 ppm', 'Source: gas stoves']
+  },
+  {
+    id: 'o2',
+    name: 'O₂',
+    fullName: 'Oxygen',
+    type: 'Gas',
+    value: 20.9,
+    unit: '%',
+    status: 'good',
+    statusText: 'Optimal',
+    meterPct: 88,
+    avg24: 20.9, peak: 20.9, variance: 0.1,
+    thresholds: ['LOW <18%', 'OK 18–19.5%', 'OPTIMAL 19.5–23%'],
+    markerPos: 88,
+    description: 'Oxygen makes up about 21% of the air we breathe and is essential for life. Healthy indoor environments maintain O₂ levels between 19.5% and 23%. Reduced oxygen can cause fatigue, headaches, and impaired judgment — usually only a concern in tightly sealed spaces or after combustion events.',
+    bullets: ['Healthy: 19.5–23%', 'Critical: below 18%']
+  },
+  {
+    id: 'temp',
+    name: 'Temp',
+    fullName: 'Temperature',
+    type: 'Climate',
+    value: 28.4,
+    unit: '°C',
+    status: 'moderate',
+    statusText: 'Warm',
+    meterPct: 62,
+    avg24: 27.8, peak: 30.2, variance: 1.4,
+    thresholds: ['COOL <20°C', 'OPTIMAL 20–26°C', 'WARM 26+°C'],
+    markerPos: 62,
+    description: 'Indoor temperature affects comfort, sleep quality, and energy efficiency. The optimal range for living spaces is 20–26°C. Higher temperatures can affect concentration, sleep, and accelerate the off-gassing of VOCs from furniture and paints.',
+    bullets: ['Optimal: 20–26°C', 'Sleep best: 18–22°C']
+  },
+  {
+    id: 'rh',
+    name: 'RH',
+    fullName: 'Relative Humidity',
+    type: 'Climate',
+    value: 54,
+    unit: '%',
+    status: 'good',
+    statusText: 'Optimal',
+    meterPct: 54,
+    avg24: 52, peak: 68, variance: 4.2,
+    thresholds: ['DRY <40%', 'OPTIMAL 40–60%', 'HUMID 60+%'],
+    markerPos: 54,
+    description: 'Relative humidity measures the moisture in air. The ideal range is 40–60%. Low humidity causes dry skin, eyes, and respiratory irritation. High humidity (above 60%) encourages mold growth, dust mites, and worsens asthma. Bathrooms and kitchens typically spike during use.',
+    bullets: ['Ideal: 40–60%', 'Mold risk: >60% sustained']
+  }
+];
+
+export const SENSOR_OPTIONS = [
+  { id: 'aqi', name: 'AQI', unit: '' },
+  { id: 'pm25', name: 'PM2.5', unit: 'μg/m³' },
+  { id: 'co2', name: 'CO₂', unit: 'ppm' },
+  { id: 'co', name: 'CO', unit: 'ppm' },
+  { id: 'o2', name: 'O₂', unit: '%' },
+  { id: 'temp', name: 'Temperature', unit: '°C' },
+  { id: 'rh', name: 'Humidity', unit: '%' }
+];
+
+export const findSensor = (id) => SENSORS.find(s => s.id === id) || SENSORS[1];
