@@ -1,5 +1,9 @@
 {
-  "root": "aerva-react",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+  "projects": {
+    "aerva": {
+      "root": "aerva-react",
+      "buildCommand": "npm run build",
+      "outputDirectory": "dist"
+    }
+  }
 }
