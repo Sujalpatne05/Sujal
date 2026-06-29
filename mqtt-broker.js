@@ -6,8 +6,18 @@ const WebSocketServer = require('ws').Server;
 const PORT = process.env.PORT || 10000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// WebSocket Server only - for web apps (Render uses single port)
-const httpServer = createHttpServer();
+// WebSocket Server - for web apps
+const httpServer = createHttpServer((req, res) => {
+  // Health check endpoint
+  if (req.url === '/' || req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok', broker: 'running' }));
+  } else {
+    res.writeHead(404);
+    res.end('Not found');
+  }
+});
+
 const wss = new WebSocketServer({ 
   server: httpServer,
   perMessageDeflate: false
