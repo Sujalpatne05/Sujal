@@ -176,60 +176,62 @@ export default function Dashboard() {
       {/* AQI Hero + Devices grid */}
       <div className="dash-grid">
         <div className="card aqi-hero">
-          <div className="aqi-hero-head">
-            <div>
+          <div className="aqi-head">
+            <div className="lbl">
               <div className="eyebrow">Whole-home AQI</div>
-              <div className="aqi-hero-room">{primaryRoomName}</div>
+              <div className="name">{primaryRoomName}</div>
             </div>
-            <ConnectionPill status={mqttStatus} />
           </div>
 
           <div className="gauge-row">
             <AQIGauge value={heroAqi} />
-            <div className="gauge-meta">
-              <div className="gauge-meta-row">
-                <span className="gauge-meta-l">CO₂</span>
-                <span className="gauge-meta-v">{live ? (live.readings.co2 ?? '—') + ' ppm' : '— ppm'}</span>
+            <div className="aqi-breakdown">
+              <div className="bd-row">
+                <span className="k">CO₂</span>
+                <div className="bd-bar"><div className="fill" style={{ width: `${Math.min((live?.readings.co2 ?? 400) / 2000 * 100, 100)}%` }} /></div>
+                <span className="v">{live?.readings.co2 ?? '—'}<span className="u">ppm</span></span>
               </div>
-              <div className="gauge-meta-row">
-                <span className="gauge-meta-l">PM2.5</span>
-                <span className="gauge-meta-v">{live ? (live.readings.pm25 ?? '—') + ' μg/m³' : '— μg/m³'}</span>
+              <div className="bd-row">
+                <span className="k">PM2.5</span>
+                <div className="bd-bar"><div className="fill" style={{ width: `${Math.min((live?.readings.pm25 ?? 20) / 100 * 100, 100)}%` }} /></div>
+                <span className="v">{live?.readings.pm25 ?? '—'}<span className="u">μg/m³</span></span>
               </div>
-              <div className="gauge-meta-row">
-                <span className="gauge-meta-l">Device</span>
-                <span className="gauge-meta-v">{live?.mac ? live.mac.slice(-6) : 'EDA3C'}</span>
+              <div className="bd-row">
+                <span className="k">Device</span>
+                <div style={{ flex: 1 }} />
+                <span className="v">{live?.mac ? live.mac.slice(-6) : 'EDA3C'}</span>
               </div>
               <Link to="/devices/living-room" className="gauge-cta">
-                Open detail <IconChevron />
+                Detail <IconChevron />
               </Link>
             </div>
           </div>
         </div>
 
         <div className="card device-panel">
-          <div className="device-panel-head">
+          <div className="panel-head">
             <div>
-              <div className="device-panel-title">Your devices</div>
-              <div className="device-panel-sub">{devices.length} {devices.length === 1 ? 'room' : 'rooms'} monitored</div>
+              <div className="panel-title">Your devices</div>
             </div>
-            <button className="btn btn-accent btn-sm" onClick={openAddDevice}>
-              <IconPlus /> Add
-            </button>
           </div>
+
+          <button className="add-device-btn" onClick={openAddDevice}>
+            <IconPlus /> Add Device
+          </button>
 
           <div className="device-list">
             {devices.map(d => (
-              <div key={d.id} className={`device-row device-row--${d.status}`}>
-                <div className="device-row-icon"><RoomIcon room={d.room} /></div>
-                <div className="device-row-info" onClick={() => navigate(`/devices/${d.id}`)}>
-                  <div className="device-row-name">{d.name}</div>
-                  <div className="device-row-meta">AERVA Home · {d.sn}</div>
+              <div key={d.id} className="device-row" onClick={() => navigate(`/devices/${d.id}`)}>
+                <div className={`status-dot ${d.status === 'good' ? '' : d.status === 'warn' ? 'warn' : 'off'}`} />
+                <div className="device-info">
+                  <div className="device-name">
+                    <RoomIcon room={d.room} className="room-icon" />
+                    {d.name}
+                  </div>
+                  <div className="device-loc">{d.sn}</div>
                 </div>
-                <div className="device-row-aqi">
-                  <span className={`aqi-num aqi-num--${d.status}`}>{d.aqi}</span>
-                  <span className="aqi-cap">AQI</span>
-                </div>
-                <button className="rename-btn" onClick={(e) => { e.stopPropagation(); openRenameDevice(d.id); }} title="Rename">
+                <div className="device-aqi">{d.aqi}<small>AQI</small></div>
+                <button className="device-action" onClick={(e) => { e.stopPropagation(); openRenameDevice(d.id); }} title="Rename">
                   <IconEdit />
                 </button>
               </div>
@@ -240,8 +242,7 @@ export default function Dashboard() {
 
       {/* Sensor grid */}
       <div className="section-head">
-        <div className="section-title">Live readings</div>
-        <div className="section-sub">{primaryRoomName} · {mqttStatus === 'connected' && lastUpdate ? 'Updated ' + timeAgo(lastUpdate) : 'Demo data — connect a device'}</div>
+        <div className="section-title">Live sensor readings</div>
       </div>
 
       <div className="sensor-grid">
@@ -252,9 +253,9 @@ export default function Dashboard() {
       <div className="analytics-row">
         <div className="card chart-card">
           <div className="chart-head">
-            <div>
-              <div className="chart-title">PM2.5 today</div>
-              <div className="chart-sub">last 24 hours · 1h intervals</div>
+            <div className="chart-title-block">
+              <div className="chart-title">PM2.5 trend</div>
+              <div className="chart-sub">Last 24 hours · {primaryRoomName}</div>
             </div>
             <div className="timeframe">
               <button className="tf-btn">1H</button>
@@ -262,8 +263,8 @@ export default function Dashboard() {
               <button className="tf-btn">7D</button>
             </div>
           </div>
-          <div style={{ width: '100%', height: 220 }}>
-            <ResponsiveContainer>
+          <div className="chart-canvas-wrap">
+            <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
@@ -284,27 +285,24 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="card insights-card">
-          <div className="insights-head">
-            <IconSparkle />
+        <div className="card ai-card">
+          <div className="ai-head">
+            <div className="ai-icon">
+              <IconSparkle />
+            </div>
             <div>
-              <div className="insights-title">AI insights</div>
-              <div className="insights-sub">Patterns detected this week</div>
+              <div className="chart-title">AI Insights</div>
+              <div className="chart-sub">This week</div>
             </div>
           </div>
-          <div className="insight-item">
-            <div className="insight-icon">🍳</div>
-            <div>
-              <div className="insight-headline">Kitchen PM2.5 spikes around 7 PM</div>
-              <div className="insight-body">Particulate matter rises when you cook dinner. Try running the kitchen exhaust 10 min before and after cooking.</div>
-            </div>
+          <div className="ai-insight">
+            <div className="title">🍳 Kitchen spike at 7 PM</div>
+            <div className="body">PM2.5 rises during dinner prep. Run exhaust fan before and after cooking.</div>
+            <div className="action">Learn more</div>
           </div>
-          <div className="insight-item">
-            <div className="insight-icon">🛏️</div>
-            <div>
-              <div className="insight-headline">Bedroom CO₂ rises overnight</div>
-              <div className="insight-body">Average overnight CO₂ is 912 ppm — opening a window slightly could reduce drowsiness.</div>
-            </div>
+          <div className="ai-insight green">
+            <div className="title">✓ CO₂ levels stable</div>
+            <div className="body">Average CO₂ across all rooms is well below unhealthy levels.</div>
           </div>
         </div>
       </div>
