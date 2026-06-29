@@ -13,7 +13,7 @@ const getBrokerUrl = () => {
   // If running on a Netlify domain and have Render backend, use it
   if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
     // Production Render broker
-    return 'wss://aerva-mqtt-broker.onrender.com';
+    return 'wss://aerva.onrender.com';
   }
   // Local development
   if (window.location.hostname === 'localhost') {
