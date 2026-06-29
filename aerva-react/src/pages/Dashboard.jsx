@@ -5,7 +5,7 @@ import { useApp } from '../store.jsx';
 import { ModalContext } from '../App.jsx';
 import { SENSORS } from '../data/sensors.js';
 import { RoomIcon, makeChartData } from '../data/devices.jsx';
-import { IconPlus, IconEdit, IconSparkle, IconChevron, IconRefresh, IconX } from '../components/icons.jsx';
+import { IconPlus, IconEdit, IconSparkle, IconChevron, IconRefresh, IconClose } from '../components/icons.jsx';
 
 function timeAgo(ts) {
   if (!ts) return null;
@@ -177,7 +177,7 @@ export default function Dashboard() {
             <div className="hsd-head-right">
               <div className="live-pill"><span className="live-dot" />LIVE</div>
               <button className="icon-btn" onClick={() => setSelectedSensor(null)} title="Close">
-                <IconX />
+                <IconClose />
               </button>
             </div>
           </div>
